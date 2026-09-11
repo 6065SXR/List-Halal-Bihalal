@@ -1,0 +1,112 @@
+<style>
+  * {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Palet Warna Visual Identitas Zettbos */
+  :root {
+    --bg-soft: #F5F6F8;
+    --pink-solid: #EA6A9C;
+    --pink-gradient-start: #FF7EB3;
+    --pink-gradient-end: #EA6A9C;
+    --blue-solid: #5A56EC;
+    --teal-slate: #265768;
+    --dark-text: #1E2238;
+    --muted-text: #7E859E;
+  }
+
+  body {
+    background-color: var(--bg-soft);
+    color: var(--dark-text);
+    min-height: 100vh;
+  }
+
+  /* Gradient Header Banner */
+  .hero-gradient {
+    background: linear-gradient(135deg, var(--pink-gradient-start) 0%, var(--pink-gradient-end) 100%);
+  }
+
+  .card-modern {
+    background: #FFFFFF;
+    border-radius: 28px;
+    box-shadow: 0 12px 32px -4px rgba(30, 34, 56, 0.05), 0 4px 12px -2px rgba(30, 34, 56, 0.02);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-seat {
+    border-radius: 16px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .card-seat:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Custom Input Rounded */
+  .input-modern {
+    background: #FFFFFF;
+    border: 1.5px solid #EBEFF5;
+    border-radius: 18px;
+    padding: 14px 18px;
+    transition: all 0.2s ease;
+  }
+  .input-modern:focus {
+    outline: none;
+    border-color: var(--pink-solid);
+    box-shadow: 0 0 0 4px rgba(234, 106, 156, 0.15);
+  }
+
+  #toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    pointer-events: none;
+  }
+  .toast-item {
+    pointer-events: auto;
+    border-radius: 20px;
+    animation: slideIn 0.3s ease forwards;
+  }
+  @keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Micro interaction button */
+  .btn-action {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-action:active {
+    transform: scale(0.97);
+  }
+
+  /* Seat Selected Swap Mode */
+  .seat-selected-swap {
+    border: 2.5px solid #EA6A9C !important;
+    animation: pulseBorder 1.5s infinite;
+  }
+  @keyframes pulseBorder {
+    0% { box-shadow: 0 0 0 0 rgba(234, 106, 156, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(234, 106, 156, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(234, 106, 156, 0); }
+  }
+
+  @media print {
+    body > div:not(#print-manifest-area):not(#print-bus-area) {
+      display: none !important;
+    }
+    #print-manifest-area:not(.hidden),
+    #print-bus-area:not(.hidden) {
+      display: block !important;
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      background: #FFFFFF !important;
+      color: #000000 !important;
+      z-index: 99999 !important;
+    }
+  }
+</style>
