@@ -33,6 +33,11 @@
 
       <!-- Action Panel Header & Admin Badge -->
       <div class="flex flex-col sm:flex-row items-center gap-3">
+        <!-- Button Info PIN Guide -->
+        <button onclick="openModal('modal-welcome-pin-guide')" class="px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur text-white rounded-2xl text-xs font-extrabold transition border border-white/30 shadow-sm flex items-center gap-2" title="Lihat Panduan Pendaftaran & PIN">
+          <span>💡 Panduan PIN</span>
+        </button>
+
         <!-- Button Login Admin -->
         <button id="btn-open-login" onclick="openModal('modal-login')" class="px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur text-white rounded-2xl text-xs font-extrabold transition border border-white/30 shadow-sm flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -48,7 +53,6 @@
       </div>
     </div>
 
-    <!-- Super Admin Panel (Backup & Restore 1-Klik) -->
     <div id="super-admin-panel" class="hidden max-w-5xl mx-auto mt-4 pt-3 border-t border-white/20 flex flex-wrap items-center justify-between gap-3 text-xs">
       <div class="flex items-center gap-2 text-amber-200 font-extrabold">
         <span>⚡ Super Admin Tools:</span>
@@ -248,7 +252,7 @@
             </div>
 
             <button id="btn-admin-print-bus" onclick="printBusSeatLayout()" class="hidden bg-[#265768] hover:bg-[#1b3e4a] text-white px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
               <span>Cetak Denah Ini</span>
             </button>
           </div>
@@ -418,6 +422,122 @@
       <p id="print-bus-timestamp" class="text-xs text-gray-600 mt-1"></p>
     </div>
     <div id="print-bus-grid" class="w-full max-w-3xl mx-auto"></div>
+  </div>
+
+  <!-- MODAL REVISI: HIMBAUAN KODE PIN WARGA (70% SCREEN WIDTH & IPHONE 16 PRO MAX MOCKUP) -->
+  <div id="modal-welcome-pin-guide" onclick="closeModalOnBackdrop(event, 'modal-welcome-pin-guide')" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden flex items-center justify-center p-3 md:p-6">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-5 md:p-8 modal-70vw shadow-2xl space-y-6 max-h-[92vh] flex flex-col border border-gray-100 relative overflow-hidden">
+      
+      <!-- Top Badge & Header Title -->
+      <div class="flex items-center justify-between border-b border-gray-100 pb-4 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <span class="w-10 h-10 rounded-2xl bg-pink-100 text-[#EA6A9C] flex items-center justify-center font-black text-lg shadow-sm">💡</span>
+          <div>
+            <span class="inline-block px-2.5 py-0.5 bg-pink-50 text-[#EA6A9C] rounded-md text-[10px] font-extrabold uppercase tracking-wider">
+              PENTING HARAP DIBACA WARGA
+            </span>
+            <h3 class="text-lg md:text-2xl font-black text-[#1E2238] tracking-tight">
+              Pemberitahuan Kode PIN Akses Pendaftaran
+            </h3>
+          </div>
+        </div>
+
+        <button onclick="closeModal('modal-welcome-pin-guide')" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Main Scrollable Content Grid -->
+      <div class="overflow-y-auto custom-scrollbar flex-1 space-y-6 pr-1">
+        
+        <!-- Text Himbauan Description -->
+        <div class="bg-gradient-to-r from-pink-50/80 via-purple-50/50 to-indigo-50/80 p-4 md:p-5 rounded-2xl border border-pink-100/80 space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#EA6A9C] animate-ping"></span>
+            <p class="text-xs md:text-sm font-extrabold text-[#1E2238] uppercase tracking-wider">
+              Himbauan Penting Bagi Seluruh Warga RT:
+            </p>
+          </div>
+          <p class="text-xs md:text-sm text-gray-700 leading-relaxed font-medium">
+            Setiap pendaftar utama yang selesai mengisi formulir akan secara otomatis diberikan <strong class="text-[#EA6A9C] font-black">KODE PIN AKSES 4-DIGIT RAHASIA</strong>. 
+            Mohon <strong class="text-[#1E2238] underline decoration-[#EA6A9C] decoration-2">SELALU INGAT, CATAT, ATAU SCREENSHOT</strong> nomor PIN tersebut! Kode PIN ini berfungsi sebagai kunci utama jika Anda ingin menambahkan pendaftaran anggota keluarga (Istri, Anak, Orang Tua) ke dalam rombongan bus.
+          </p>
+        </div>
+
+        <!-- Visual Mockup Container: iPhone 16 Pro Max Preview -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between px-1">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+              <span> CONTOH TAMPILAN PIN PADA HANDPHONE ANDA</span>
+            </p>
+            <span class="text-[9px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">Jangan lupa diingat dan di simpan</span>
+          </div>
+
+          <!-- iPhone 16 Pro Max Device Chassis (Compacted Size) -->
+          <div class="max-w-[220px] sm:max-w-[240px] mx-auto iphone-16-pro-frame">
+            <!-- Dynamic Island Pill -->
+            <div class="iphone-dynamic-island"></div>
+
+            <!-- Phone Screen Content (Replicating Registration Success Card) -->
+            <div class="bg-white rounded-2xl p-3 text-center space-y-2 shadow-md">
+              
+              <!-- Success Badge Icon -->
+              <div class="w-8 h-8 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              </div>
+
+              <!-- Header Text -->
+              <div>
+                <h4 class="text-xs font-black text-[#1E2238]">Pendaftaran Berhasil!</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 leading-tight">Simpan PIN Akses di bawah ini untuk menambahkan anggota keluarga Anda nanti.</p>
+              </div>
+
+              <!-- Pink Box with Blurred PIN Example -->
+              <div class="bg-pink-50/90 border border-pink-200/90 p-2 rounded-xl space-y-0.5 relative overflow-hidden">
+                <div class="flex items-center justify-center gap-1">
+                  <span class="text-[8px] font-bold text-gray-400 uppercase tracking-widest">PIN AKSES WARGA ANDA</span>
+                  <span class="bg-pink-200 text-pink-800 text-[7px] font-extrabold px-1 py-0.2 rounded-full">🔒 Contoh Blur</span>
+                </div>
+                
+                <!-- PIN Text with Blur Effect -->
+                <div class="flex items-center justify-center py-0.5">
+                  <p class="text-xl font-black text-[#EA6A9C] tracking-widest font-mono pin-blur-sample select-none">
+                    7 6 5 9
+                  </p>
+                </div>
+                <p class="text-[8px] text-pink-500 font-bold italic">*Nomor PIN Anda nanti akan terlihat jelas saat daftar</p>
+              </div>
+
+              <!-- Transaction Summary Box -->
+              <div class="text-left bg-gray-50 p-2 rounded-lg text-[9px] space-y-0.5 border border-gray-100">
+                <p class="flex justify-between"><span class="text-gray-400">ID Transaksi:</span> <span class="font-bold font-mono text-[#1E2238]">HAL-0017</span></p>
+                <p class="flex justify-between"><span class="text-gray-400">Alokasi Bus:</span> <span class="font-bold text-[#EA6A9C]">Bus 1</span></p>
+                <p class="flex justify-between"><span class="text-gray-400">Nomor Kursi:</span> <span class="font-bold text-[#5A56EC]">4B</span></p>
+                <p class="flex justify-between"><span class="text-gray-400">Setoran Awal:</span> <span class="font-bold text-emerald-600">Rp 0</span></p>
+              </div>
+
+              <!-- Action Buttons Replicas -->
+              <div class="space-y-1 pt-0.5">
+                <div class="w-full py-1.5 bg-emerald-600 text-white rounded-lg text-[9px] font-bold shadow-sm">
+                  Kirim Konfirmasi ke WA Admin
+                </div>
+                <div class="w-full py-1.5 bg-gray-100 text-gray-700 rounded-lg text-[9px] font-bold">
+                  Tutup & Lihat Daftar
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Action Button: SAYA MENGERTI -->
+      <div class="pt-2 border-t border-gray-100 flex-shrink-0">
+        <button onclick="closeModal('modal-welcome-pin-guide')" class="w-full btn-action bg-gradient-to-r from-[#FF7EB3] to-[#EA6A9C] hover:opacity-95 text-white font-black py-4 rounded-2xl shadow-xl shadow-pink-500/25 flex items-center justify-center gap-2 text-sm tracking-wide">
+          <span>SAYA MENGERTI & SIAP MENDAFTAR</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL 1: REKAPITULASI TOTAL WARGA & KELUARGA (EXCEL STYLE POPUP) -->
@@ -744,7 +864,7 @@
       </div>
 
       <div class="bg-pink-50/80 border border-pink-200 p-4 rounded-2xl space-y-1">
-        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">PIN Akses Warga Anda</p>
+        <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">PIN AKSES WARGA ANDA</p>
         <p id="succ-pin-display" class="text-3xl font-black text-[#EA6A9C] tracking-widest font-mono">0000</p>
       </div>
 
