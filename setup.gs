@@ -2,14 +2,14 @@
  * ============================================================================
  * ZETTBOS SYSTEM ARCHITECTURE - SETUP & SAFE MIGRATE
  * File: setup.gs
- * Deskripsi: Inisialisasi Database 13 Kolom Presisi & Multi-Bus (Bus 1 & Bus 2 - 108 Seat)
+ * Deskripsi: Inisialisasi Database 13 Kolom Presisi & Medium Bus (Bus 1 & Bus 2 - Total 66 Seat)
  * ============================================================================
  */
 
 function setupDatabase() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  // 1. Sheet Utama: Peserta (Struktur 13 Kolom Presisi)
+  // 1. Sheet Utama: Peserta (Struktur 13 Kolom Presisi - Sistem Tabungan)
   var sheetPesertaName = 'Peserta';
   var sheetPeserta = ss.getSheetByName(sheetPesertaName);
   var headerPeserta = [
@@ -22,7 +22,7 @@ function setupDatabase() {
     'No. Rumah', 
     'Catatan Lokasi', 
     'Metode Pembayaran', 
-    'Status Pembayaran', 
+    'Jumlah Tabungan (Rp)', 
     'SponsorID', 
     'SponsorNama', 
     'RelationToSponsor'
@@ -33,12 +33,34 @@ function setupDatabase() {
     sheetPeserta.getRange(1, 1, 1, headerPeserta.length).setValues([headerPeserta]);
     formatHeaderRow_(sheetPeserta, headerPeserta.length, '#EA6A9C');
   } else {
-    // Safe Migrate: Paksakan update Header Baris 1 ke 13 Kolom Presisi tanpa menghapus data
+    // Safe Migrate: Update Header Baris 1 ke 13 Kolom Presisi tanpa menghapus data
     sheetPeserta.getRange(1, 1, 1, headerPeserta.length).setValues([headerPeserta]);
     formatHeaderRow_(sheetPeserta, headerPeserta.length, '#EA6A9C');
   }
 
-  // 2. Sheet Kursi Bus (Multi-Bus: Bus 1 & Bus 2 @ 54 Seats)
+  // 2. Sheet Log Setoran Tabungan
+  var sheetLogName = 'Log_Tabungan';
+  var sheetLog = ss.getSheetByName(sheetLogName);
+  var headerLog = [
+    'ID Log', 
+    'Tanggal & Waktu', 
+    'ID Transaksi', 
+    'Nama Peserta', 
+    'Nominal Setoran (Rp)', 
+    'Total Tabungan (Rp)', 
+    'Admin Penyetor'
+  ];
+
+  if (!sheetLog) {
+    sheetLog = ss.insertSheet(sheetLogName);
+    sheetLog.getRange(1, 1, 1, headerLog.length).setValues([headerLog]);
+    formatHeaderRow_(sheetLog, headerLog.length, '#265768');
+  } else {
+    sheetLog.getRange(1, 1, 1, headerLog.length).setValues([headerLog]);
+    formatHeaderRow_(sheetLog, headerLog.length, '#265768');
+  }
+
+  // 3. Sheet Kursi Bus (Medium Bus: Bus 1 & Bus 2 @ 33 Seats = Total 66 Seats)
   var sheetBusName = 'Kursi_Bus';
   var sheetBus = ss.getSheetByName(sheetBusName);
   var headerBus = ['ID Bus', 'No Kursi', 'Baris', 'Tipe Kursi', 'ID Peserta', 'Nama Terisi'];
@@ -47,53 +69,50 @@ function setupDatabase() {
     sheetBus = ss.insertSheet(sheetBusName);
     sheetBus.getRange(1, 1, 1, headerBus.length).setValues([headerBus]);
     formatHeaderRow_(sheetBus, headerBus.length, '#5A56EC');
-  } else {
-    // Safe Migrate header baris 1
-    sheetBus.getRange(1, 1, 1, headerBus.length).setValues([headerBus]);
-    formatHeaderRow_(sheetBus, headerBus.length, '#5A56EC');
-  }
-
-  // Safe Migrate kursi: Jika data kursi masih format lama (5 kolom) atau kurang dari 108 kursi, perbarui/tambahkan
-  var lastRowBus = sheetBus.getLastRow();
-  if (lastRowBus <= 1) {
-    var seatsDataBus1 = generateBus54SeatsStructure_('Bus 1');
-    var seatsDataBus2 = generateBus54SeatsStructure_('Bus 2');
-    var allSeats = seatsDataBus1.concat(seatsDataBus2);
+    
+    var seatsBus1 = generateBus33MediumSeatsStructure_('Bus 1');
+    var seatsBus2 = generateBus33MediumSeatsStructure_('Bus 2');
+    var allSeats = seatsBus1.concat(seatsBus2);
     sheetBus.getRange(2, 1, allSeats.length, headerBus.length).setValues(allSeats);
   } else {
-    // Cek apakah data bus lama hanya 5 kolom (belum ada ID Bus di kolom 1)
-    var firstDataCol = String(sheetBus.getRange(2, 1, 1, 1).getDisplayValue() || '');
-    if (firstDataCol.indexOf('Bus') === -1) {
-      // Format lama: sisipkan kolom ID Bus = 'Bus 1'
-      var oldBusData = sheetBus.getRange(2, 1, lastRowBus - 1, 5).getValues();
-      var migratedBusData = [];
-      for (var b = 0; b < oldBusData.length; b++) {
-        migratedBusData.push([
-          'Bus 1',
-          oldBusData[b][0],
-          oldBusData[b][1],
-          oldBusData[b][2],
-          oldBusData[b][3],
-          oldBusData[b][4]
-        ]);
+    sheetBus.getRange(1, 1, 1, headerBus.length).setValues([headerBus]);
+    formatHeaderRow_(sheetBus, headerBus.length, '#5A56EC');
+
+    var lastRowBus = sheetBus.getLastRow();
+    // Safe Migrate: Jika total kursi belum 66 kursi medium (33 x 2), perbarui struktur kursi
+    if (lastRowBus !== 67) {
+      // Simpan data pendaftar kursi yang sudah terisi sebelumnya
+      var existingAssignments = {};
+      if (lastRowBus > 1) {
+        var oldData = sheetBus.getRange(2, 1, lastRowBus - 1, 6).getValues();
+        for (var i = 0; i < oldData.length; i++) {
+          var pId = oldData[i][4];
+          var pName = oldData[i][5];
+          if (pId && pName) {
+            existingAssignments[pId] = pName;
+          }
+        }
       }
-      sheetBus.getRange(2, 1, migratedBusData.length, 6).setValues(migratedBusData);
+
+      sheetBus.getRange(2, 1, Math.max(lastRowBus, 120), 6).clearContent();
       
-      // Jika belum ada Bus 2, tambahkan 54 seat Bus 2 di bawahnya
-      if (migratedBusData.length < 108) {
-        var bus2Seats = generateBus54SeatsStructure_('Bus 2');
-        sheetBus.getRange(migratedBusData.length + 2, 1, bus2Seats.length, 6).setValues(bus2Seats);
+      var seatsBus1 = generateBus33MediumSeatsStructure_('Bus 1');
+      var seatsBus2 = generateBus33MediumSeatsStructure_('Bus 2');
+      var newAllSeats = seatsBus1.concat(seatsBus2);
+
+      // Re-assign pendaftar ke kursi baru secara sekuensial
+      var assignedKeys = Object.keys(existingAssignments);
+      for (var k = 0; k < assignedKeys.length && k < newAllSeats.length; k++) {
+        var curId = assignedKeys[k];
+        newAllSeats[k][4] = curId;
+        newAllSeats[k][5] = existingAssignments[curId];
       }
-    } else {
-      // Sudah ada ID Bus, pastikan Bus 2 juga terinisialisasi jika total kursi < 108
-      if (lastRowBus - 1 < 108) {
-        var bus2Data = generateBus54SeatsStructure_('Bus 2');
-        sheetBus.getRange(56, 1, bus2Data.length, 6).setValues(bus2Data);
-      }
+
+      sheetBus.getRange(2, 1, newAllSeats.length, 6).setValues(newAllSeats);
     }
   }
 
-  // 3. Sheet Konfigurasi / Pengaturan Sistem
+  // 4. Sheet Konfigurasi / Pengaturan Sistem
   var sheetConfigName = 'Konfigurasi';
   var sheetConfig = ss.getSheetByName(sheetConfigName);
   var headerConfig = ['Key', 'Value'];
@@ -101,7 +120,7 @@ function setupDatabase() {
   if (!sheetConfig) {
     sheetConfig = ss.insertSheet(sheetConfigName);
     sheetConfig.getRange(1, 1, 1, headerConfig.length).setValues([headerConfig]);
-    formatHeaderRow_(sheetConfig, headerConfig.length, '#265768');
+    formatHeaderRow_(sheetConfig, headerConfig.length, '#1E2238');
     
     var defaultConfigs = [
       ['ALAMAT_FIX', 'Kamp baru I Jl. Marga Mulya'],
@@ -112,16 +131,15 @@ function setupDatabase() {
     sheetConfig.getRange(2, 1, defaultConfigs.length, 2).setValues(defaultConfigs);
   }
 
-  // 4. Jalankan Auto-Clean Migration untuk merapikan data teracak/tergeser
+  // 5. Auto-Clean Migration
   fixScrambledData();
 
   SpreadsheetApp.flush();
-  Logger.log('Safe Migrate & Auto-Clean Multi-Bus Selesai: Database Siap Digunakan.');
+  Logger.log('Safe Migrate Selesai: Database Medium Bus (33 Seat/Bus) Siap Digunakan.');
 }
 
 /**
- * ZettBOT Feature: Auto-Clean / Fix Migration Script
- * Memeriksa dan merapikan data format lama (11 kolom) menjadi 13 kolom presisi.
+ * ZettBOT Feature: Safe Data Cleanup Script
  */
 function fixScrambledData() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -142,33 +160,32 @@ function fixScrambledData() {
 
     var colD = String(row[3] || '').trim();
 
-    // Jika Kolom D berisi Alamat "Kamp...", artinya ini baris data format lama (11 kolom)
     if (/^kamp/i.test(colD) || colD.indexOf('Jl.') !== -1) {
       isModified = true;
       var generatedPin = String(Math.floor(1000 + Math.random() * 9000));
       
-      // Susun ulang posisi data secara presisi ke 13 kolom
       var cleanedRow = [
         row[0],                  // ID Transaksi
         row[1],                  // Tanggal
         row[2],                  // Nama Peserta
-        '081234567890',          // No. WhatsApp (Default Placeholder)
-        generatedPin,            // PIN Akses (Auto-Generate 4 Digit)
-        row[3],                  // Alamat (Fix) -> "Kamp baru I Jl..."
+        '081234567890',          // No. WhatsApp
+        generatedPin,            // PIN Akses
+        row[3],                  // Alamat (Fix)
         row[4],                  // No. Rumah
         row[5],                  // Catatan Lokasi
         row[6] || 'Tunai',       // Metode Pembayaran
-        row[7] || 'Lunas',       // Status Pembayaran
+        0,                       // Jumlah Tabungan Default 0
         row[8] || '',            // SponsorID
         row[9] || '',            // SponsorNama
         row[10] || ''            // RelationToSponsor
       ];
       cleanedValues.push(cleanedRow);
     } else {
-      // Data sudah dalam format 13 kolom yang benar
+      var tabVal = parseInt(String(row[9]).replace(/\D/g, ''), 10);
       cleanedValues.push([
         row[0], row[1], row[2], row[3], row[4], row[5], 
-        row[6], row[7], row[8], row[9], row[10], row[11], row[12]
+        row[6], row[7], row[8], isNaN(tabVal) ? 0 : tabVal, 
+        row[10], row[11], row[12]
       ]);
     }
   }
@@ -176,34 +193,40 @@ function fixScrambledData() {
   if (isModified && cleanedValues.length > 0) {
     sheetPeserta.getRange(2, 1, cleanedValues.length, 13).setValues(cleanedValues);
     SpreadsheetApp.flush();
-    Logger.log('Auto-Clean Selesai: Data lama berhasil disesuaikan dengan header baru!');
   }
 }
 
 /**
- * Helper: Membentuk struktur 54 kursi bus pariwisata (Konfigurasi 2-3) untuk ID Bus tertentu
+ * Helper: Membentuk struktur 33 kursi Armada Medium Bus (Konfigurasi 2-2 & 5 Belakang)
  */
-function generateBus54SeatsStructure_(busId) {
+function generateBus33MediumSeatsStructure_(busId) {
   var bId = busId || 'Bus 1';
   var rows = [];
-  for (var r = 1; r <= 10; r++) {
-    rows.push([bId, r + 'A', r, 'Window (Kiri)', '', '']);
-    rows.push([bId, r + 'B', r, 'Aisle (Kiri)', '', '']);
-    rows.push([bId, r + 'C', r, 'Aisle (Kanan)', '', '']);
-    rows.push([bId, r + 'D', r, 'Middle (Kanan)', '', '']);
-    rows.push([bId, r + 'E', r, 'Window (Kanan)', '', '']);
+
+  // Baris 1 s/d 7: 4 Kursi per Baris (Konfigurasi 2-2)
+  for (var r = 1; r <= 7; r++) {
+    var startNum = (r - 1) * 4 + 1;
+    var s1 = ('0' + startNum).slice(-2);
+    var s2 = ('0' + (startNum + 1)).slice(-2);
+    var s3 = ('0' + (startNum + 2)).slice(-2);
+    var s4 = ('0' + (startNum + 3)).slice(-2);
+
+    rows.push([bId, s1, r, 'Window (Kiri)', '', '']);
+    rows.push([bId, s2, r, 'Aisle (Kiri)', '', '']);
+    rows.push([bId, s3, r, 'Aisle (Kanan)', '', '']);
+    rows.push([bId, s4, r, 'Window (Kanan)', '', '']);
   }
-  rows.push([bId, '11A', 11, 'Window (Kiri Belakang)', '', '']);
-  rows.push([bId, '11B', 11, 'Middle (Kiri Belakang)', '', '']);
-  rows.push([bId, '11C', 11, 'Middle (Kanan Belakang)', '', '']);
-  rows.push([bId, '11D', 11, 'Window (Kanan Belakang)', '', '']);
+
+  // Baris 8 (Belakang Penuh): 5 Kursi (29, 30, 31, 32, 33)
+  rows.push([bId, '29', 8, 'Window (Kiri Belakang)', '', '']);
+  rows.push([bId, '30', 8, 'Middle (Kiri Belakang)', '', '']);
+  rows.push([bId, '31', 8, 'Middle (Tengah Belakang)', '', '']);
+  rows.push([bId, '32', 8, 'Middle (Kanan Belakang)', '', '']);
+  rows.push([bId, '33', 8, 'Window (Kanan Belakang)', '', '']);
 
   return rows;
 }
 
-/**
- * Format baris header tabel dengan warna identitas Zettbos
- */
 function formatHeaderRow_(sheet, colCount, hexColor) {
   var headerRange = sheet.getRange(1, 1, 1, colCount);
   headerRange.setBackground(hexColor)
