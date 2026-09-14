@@ -8,53 +8,48 @@
     currentFilter: 'SEMUA',
     searchQuery: '',
     selectedSeatForSwap: null,
-    adminWaPhone: '6281234567890'
+    activeTabunganPeserta: null,
+    adminWaPhone: '6281234567890',
+    currentInfoHari: 'Hari 1',
+    rundownList: [],
+    kontakList: []
   };
 
-  var previewDummyPeserta = [
-    {
-      id: 'HAL-0001',
-      nama: 'Budi Santoso',
-      noWhatsapp: '081234567890',
-      pinAkses: '4829',
-      alamat: 'Kamp baru I Jl. Marga Mulya',
-      noRumah: 'No. 12',
-      catatanLokasi: 'Dekat pos satpam RT 03',
-      metodePembayaran: 'Tunai',
-      statusPembayaran: 'Lunas',
-      familyMembers: [
-        { id: 'HAL-0002', nama: 'Siti Aminah', hubungan: 'Istri', statusPembayaran: 'Lunas' },
-        { id: 'HAL-0003', nama: 'Rizky Pratama', hubungan: 'Anak 1', statusPembayaran: 'Lunas' }
-      ]
-    },
-    {
-      id: 'HAL-0004',
-      nama: 'Dewi Lestari',
-      noWhatsapp: '081876543210',
-      pinAkses: '1952',
-      alamat: 'Kamp baru I Jl. Marga Mulya',
-      noRumah: 'No. 5',
-      catatanLokasi: 'Depan pohon mangga besar',
-      metodePembayaran: 'Tunai',
-      statusPembayaran: 'Lunas',
-      familyMembers: []
-    }
+  var previewDummyRundown = [
+    { id: 'RD-001', hari: 'Hari 1', jam: '06:00 - 06:30', judul: 'Kumpul & Absensi Peserta Bus', keterangan: 'Titik Kumpul: Kp. Baru I Jl. Marga Mulya (Depan Pos Satpam RT 03)' },
+    { id: 'RD-002', hari: 'Hari 1', jam: '06:45 WIB', judul: 'Keberangkatan Bus Medium 1 & Bus 2', keterangan: 'Seluruh armada berangkat bersama. Mohon hadir tepat waktu!' },
+    { id: 'RD-003', hari: 'Hari 1', jam: '09:30 - 11:30', judul: 'Pembukaan, Tausiyah & Halal Bihalal', keterangan: 'Sambutan Ketua RT, Mushafahah/Salaman Warga, dan Tausiyah Agama' },
+    { id: 'RD-004', hari: 'Hari 1', jam: '11:30 - 13:30', judul: 'Makan Siang & Ramah Tamah', keterangan: 'Santap Catering bersama & Pembagian Doorprize Digital' },
+    { id: 'RD-005', hari: 'Hari 1', jam: '15:30 WIB', judul: 'Persiapan Pulang ke Kamp Baru I', keterangan: 'Pengecekan ulang seluruh anggota keluarga di Bus 1 & Bus 2' },
+    { id: 'RD-006', hari: 'Hari 2', jam: '07:30 - 09:00', judul: 'Senam Pagi Warga & Sarapan Bersama', keterangan: 'Area Lapangan Villa / Resort Halal Bihalal' },
+    { id: 'RD-007', hari: 'Hari 2', jam: '09:30 - 12:00', judul: 'Fun Games Warga & Pembagian Hadiah', keterangan: 'Lomba keakraban antar RT & Door Prize Utama' },
+    { id: 'RD-008', hari: 'Hari 2', jam: '13:00 WIB', judul: 'Check Out & Perjalanan Pulang', keterangan: 'Seluruh armada bus kembali ke Jakarta' }
+  ];
+
+  var previewDummyKontak = [
+    { id: 'KT-001', jabatan: 'Koordinator Bus 1', nama: 'Pak Agus', noWhatsapp: '081234567890' },
+    { id: 'KT-002', jabatan: 'Koordinator Bus 2', nama: 'Tommy H', noWhatsapp: '081234567890' },
+    { id: 'KT-003', jabatan: 'Ketua RT 03', nama: 'Pak Sugeng', noWhatsapp: '081398765432' }
   ];
 
   var previewDummySeats = [];
   (function initPreviewSeats() {
     ['Bus 1', 'Bus 2'].forEach(function(busId) {
-      for (var r = 1; r <= 10; r++) {
-        previewDummySeats.push({ idBus: busId, noKursi: r + 'A', baris: r, tipeKursi: 'Window (Kiri)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0001' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Budi Santoso' : '' });
-        previewDummySeats.push({ idBus: busId, noKursi: r + 'B', baris: r, tipeKursi: 'Aisle (Kiri)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0002' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Siti Aminah' : '' });
-        previewDummySeats.push({ idBus: busId, noKursi: r + 'C', baris: r, tipeKursi: 'Aisle (Kanan)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0003' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Rizky Pratama' : '' });
-        previewDummySeats.push({ idBus: busId, noKursi: r + 'D', baris: r, tipeKursi: 'Middle (Kanan)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0004' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Dewi Lestari' : '' });
-        previewDummySeats.push({ idBus: busId, noKursi: r + 'E', baris: r, tipeKursi: 'Window (Kanan)', idPeserta: '', namaTerisi: '' });
+      for (var r = 1; r <= 7; r++) {
+        var startNum = (r - 1) * 4 + 1;
+        var s1 = ('0' + startNum).slice(-2);
+        var s2 = ('0' + (startNum + 1)).slice(-2);
+        var s3 = ('0' + (startNum + 2)).slice(-2);
+        var s4 = ('0' + (startNum + 3)).slice(-2);
+
+        previewDummySeats.push({ idBus: busId, noKursi: s1, baris: r, tipeKursi: 'Window (Kiri)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0001' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Budi Santoso' : '' });
+        previewDummySeats.push({ idBus: busId, noKursi: s2, baris: r, tipeKursi: 'Aisle (Kiri)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0002' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Siti Aminah' : '' });
+        previewDummySeats.push({ idBus: busId, noKursi: s3, baris: r, tipeKursi: 'Aisle (Kanan)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0003' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Rizky Pratama' : '' });
+        previewDummySeats.push({ idBus: busId, noKursi: s4, baris: r, tipeKursi: 'Window (Kanan)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0004' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Dewi Lestari' : '' });
       }
-      previewDummySeats.push({ idBus: busId, noKursi: '11A', baris: 11, tipeKursi: 'Window (Kiri)', idPeserta: '', namaTerisi: '' });
-      previewDummySeats.push({ idBus: busId, noKursi: '11B', baris: 11, tipeKursi: 'Middle (Kiri)', idPeserta: '', namaTerisi: '' });
-      previewDummySeats.push({ idBus: busId, noKursi: '11C', baris: 11, tipeKursi: 'Middle (Kanan)', idPeserta: '', namaTerisi: '' });
-      previewDummySeats.push({ idBus: busId, noKursi: '11D', baris: 11, tipeKursi: 'Window (Kanan)', idPeserta: '', namaTerisi: '' });
+      for (var b = 29; b <= 33; b++) {
+        previewDummySeats.push({ idBus: busId, noKursi: String(b), baris: 8, tipeKursi: 'Belakang Penuh', idPeserta: '', namaTerisi: '' });
+      }
     });
   })();
 
@@ -70,6 +65,10 @@
             appState.peserta = res.data.peserta || [];
             appState.seats = res.data.seats || [];
             appState.stats = res.data.stats || {};
+            if (res.data.info) {
+              appState.rundownList = res.data.info.rundown || [];
+              appState.kontakList = res.data.info.kontak || [];
+            }
             renderAll();
           } else {
             showToast(res ? res.message : 'Gagal memuat data', 'error');
@@ -80,13 +79,17 @@
         })
         .getAppData(appState.searchQuery, appState.currentFilter);
     } else {
-      appState.peserta = previewDummyPeserta;
+      appState.peserta = [
+        { id: 'HAL-0001', nama: 'Budi Santoso', noRumah: 'No. 12', catatanLokasi: 'Dekat pos satpam', noWhatsapp: '081234567890', jumlahTabungan: 500000, familyMembers: [{ id: 'HAL-0002', nama: 'Siti Aminah', hubungan: 'Istri', jumlahTabungan: 0 }, { id: 'HAL-0003', nama: 'Rizky Pratama', hubungan: 'Anak 1', jumlahTabungan: 0 }] },
+        { id: 'HAL-0004', nama: 'Dewi Lestari', noRumah: 'No. 05', catatanLokasi: 'Depan pos satpam', noWhatsapp: '081876543210', jumlahTabungan: 200000, familyMembers: [] }
+      ];
       appState.seats = previewDummySeats;
+      appState.rundownList = previewDummyRundown;
+      appState.kontakList = previewDummyKontak;
       appState.stats = {
         totalWarga: 4,
         totalKepalaKeluarga: 2,
-        totalLunas: 4,
-        totalMenunggu: 0,
+        totalTabungan: 700000,
         kursiTerisiBus1: 4,
         kursiTerisiBus2: 0
       };
@@ -98,17 +101,524 @@
     renderStats();
     renderParticipantList();
     renderBusSeats();
+    renderInfoTab();
+  }
+
+  /* =========================================================================
+   * REVISI GAMBAR 1 & 2: MODAL POPUP REKAP WARGA & TABUNGAN EXCEL-STYLE
+   * ========================================================================= */
+  function findSeatInfoForPeserta(idOrName) {
+    if (!appState.seats || appState.seats.length === 0) return '-';
+    var found = appState.seats.find(function(s) {
+      return (s.idPeserta && s.idPeserta === idOrName) || (s.namaTerisi && s.namaTerisi.toLowerCase().trim() === String(idOrName).toLowerCase().trim());
+    });
+    if (found && found.idBus) {
+      return found.idBus + ' (' + ('0' + found.noKursi).slice(-2) + ')';
+    }
+    return '-';
+  }
+
+  function openRekapWargaModal() {
+    var tbody = document.getElementById('rekap-warga-table-body');
+    var tfoot = document.getElementById('rekap-warga-table-foot');
+    if (!tbody) return;
+
+    var list = appState.peserta || [];
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-400">Belum ada peserta terdaftar.</td></tr>';
+      tfoot.innerHTML = '';
+      openModal('modal-rekap-warga');
+      return;
+    }
+
+    var html = '';
+    var globalNo = 1;
+    var familyGroupIndex = 0;
+    var totalWargaCount = 0;
+
+    for (var i = 0; i < list.length; i++) {
+      var head = list[i];
+      var familyMembers = head.familyMembers || [];
+      var familyCount = 1 + familyMembers.length;
+      totalWargaCount += familyCount;
+
+      var bgClass = (familyGroupIndex % 2 === 0) ? 'bg-[#F2F4F8]' : 'bg-white';
+      var kkName = escapeHtml(head.nama);
+      var seatHead = findSeatInfoForPeserta(head.id || head.nama);
+
+      // Baris Kepala Keluarga (KK)
+      html += '<tr class="' + bgClass + ' hover:opacity-95 border-b border-gray-200/80 transition">';
+      html += '  <td class="p-2.5 text-center font-bold text-gray-500 border-r border-gray-200/60">' + (globalNo++) + '</td>';
+      html += '  <td class="p-2.5 font-extrabold text-[#1E2238] border-r border-gray-200/60">' + kkName + '</td>';
+      html += '  <td class="p-2.5 font-bold text-[#1E2238] border-r border-gray-200/60">' + kkName + '</td>';
+      html += '  <td class="p-2.5 border-r border-gray-200/60"><span class="px-2 py-0.5 rounded-md bg-pink-100 text-pink-700 font-extrabold text-[10px]">Kepala Keluarga</span></td>';
+      html += '  <td class="p-2.5 text-center border-r border-gray-200/60 font-semibold">' + escapeHtml(head.noRumah || '-') + '</td>';
+      html += '  <td class="p-2.5 text-center border-r border-gray-200/60 font-mono text-[#5A56EC] font-bold">' + escapeHtml(head.noWhatsapp || '-') + '</td>';
+      html += '  <td class="p-2.5 text-center font-extrabold text-indigo-600">' + seatHead + '</td>';
+      html += '</tr>';
+
+      // Baris Anggota Keluarga
+      for (var f = 0; f < familyMembers.length; f++) {
+        var sub = familyMembers[f];
+        var seatSub = findSeatInfoForPeserta(sub.id || sub.nama);
+        html += '<tr class="' + bgClass + ' hover:opacity-95 border-b border-gray-200/80 transition">';
+        html += '  <td class="p-2.5 text-center font-bold text-gray-400 border-r border-gray-200/60">' + (globalNo++) + '</td>';
+        html += '  <td class="p-2.5 text-gray-400 italic border-r border-gray-200/60 text-[11px]">' + kkName + '</td>';
+        html += '  <td class="p-2.5 font-bold text-gray-800 border-r border-gray-200/60 pl-5">└ ' + escapeHtml(sub.nama) + '</td>';
+        html += '  <td class="p-2.5 border-r border-gray-200/60"><span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-bold text-[10px]">' + escapeHtml(sub.hubungan || 'Anggota') + '</span></td>';
+        html += '  <td class="p-2.5 text-center border-r border-gray-200/60 text-gray-500">' + escapeHtml(head.noRumah || '-') + '</td>';
+        html += '  <td class="p-2.5 text-center border-r border-gray-200/60 font-mono text-gray-400 text-[11px]">' + escapeHtml(head.noWhatsapp || '-') + '</td>';
+        html += '  <td class="p-2.5 text-center font-bold text-indigo-500">' + seatSub + '</td>';
+        html += '</tr>';
+      }
+
+      familyGroupIndex++;
+    }
+
+    tbody.innerHTML = html;
+
+    var footHtml = '';
+    footHtml += '<tr class="bg-gray-200 font-black text-center text-xs text-[#1E2238] border-t-2 border-gray-400">';
+    footHtml += '  <td colspan="3" class="p-3 text-left uppercase tracking-wider">TOTAL MANIFEST PESERTA:</td>';
+    footHtml += '  <td colspan="4" class="p-3 text-right text-pink-600 font-extrabold text-sm">' + totalWargaCount + ' Peserta Terdaftar</td>';
+    footHtml += '</tr>';
+    tfoot.innerHTML = footHtml;
+
+    openModal('modal-rekap-warga');
+  }
+
+  function openRekapTabunganModal() {
+    var tbody = document.getElementById('rekap-tabungan-table-body');
+    var tfoot = document.getElementById('rekap-tabungan-table-foot');
+    if (!tbody) return;
+
+    var list = appState.peserta || [];
+    if (list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-400">Belum ada data tabungan terdaftar.</td></tr>';
+      tfoot.innerHTML = '';
+      openModal('modal-rekap-tabungan');
+      return;
+    }
+
+    var html = '';
+    var globalNo = 1;
+    var familyGroupIndex = 0;
+    var grandTotalTabungan = 0;
+
+    for (var i = 0; i < list.length; i++) {
+      var head = list[i];
+      var familyMembers = head.familyMembers || [];
+
+      var totalFamilyTab = head.jumlahTabungan || 0;
+      for (var fCount = 0; fCount < familyMembers.length; fCount++) {
+        totalFamilyTab += (familyMembers[fCount].jumlahTabungan || 0);
+      }
+      grandTotalTabungan += totalFamilyTab;
+
+      var bgClass = (familyGroupIndex % 2 === 0) ? 'bg-[#F2F4F8]' : 'bg-white';
+      var kkName = escapeHtml(head.nama);
+      var headTabVal = head.jumlahTabungan || 0;
+
+      // Baris Kepala Keluarga (KK)
+      html += '<tr class="' + bgClass + ' hover:opacity-95 border-b border-gray-200/80 transition">';
+      html += '  <td class="p-2.5 text-center font-bold text-gray-500 border-r border-gray-200/60">' + (globalNo++) + '</td>';
+      html += '  <td class="p-2.5 font-extrabold text-[#1E2238] border-r border-gray-200/60">' + kkName + '</td>';
+      html += '  <td class="p-2.5 font-bold text-[#1E2238] border-r border-gray-200/60">' + kkName + '</td>';
+      html += '  <td class="p-2.5 border-r border-gray-200/60"><span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-extrabold text-[10px]">Kepala Keluarga</span></td>';
+      html += '  <td class="p-2.5 text-center border-r border-gray-200/60 font-semibold">' + escapeHtml(head.noRumah || '-') + '</td>';
+      html += '  <td class="p-2.5 text-right font-bold text-gray-800 border-r border-gray-200/60 font-mono">Rp ' + headTabVal.toLocaleString('id-ID') + '</td>';
+      html += '  <td class="p-2.5 text-right font-extrabold text-emerald-700 font-mono bg-emerald-50/50">Rp ' + totalFamilyTab.toLocaleString('id-ID') + '</td>';
+      html += '</tr>';
+
+      // Baris Anggota Keluarga
+      for (var f = 0; f < familyMembers.length; f++) {
+        var sub = familyMembers[f];
+        var subTabVal = sub.jumlahTabungan || 0;
+        html += '<tr class="' + bgClass + ' hover:opacity-95 border-b border-gray-200/80 transition">';
+        html += '  <td class="p-2.5 text-center font-bold text-gray-400 border-r border-gray-200/60">' + (globalNo++) + '</td>';
+        html += '  <td class="p-2.5 text-gray-400 italic border-r border-gray-200/60 text-[11px]">' + kkName + '</td>';
+        html += '  <td class="p-2.5 font-bold text-gray-800 border-r border-gray-200/60 pl-5">└ ' + escapeHtml(sub.nama) + '</td>';
+        html += '  <td class="p-2.5 border-r border-gray-200/60"><span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-bold text-[10px]">' + escapeHtml(sub.hubungan || 'Anggota') + '</span></td>';
+        html += '  <td class="p-2.5 text-center border-r border-gray-200/60 text-gray-500">' + escapeHtml(head.noRumah || '-') + '</td>';
+        html += '  <td class="p-2.5 text-right font-semibold text-gray-600 border-r border-gray-200/60 font-mono">Rp ' + subTabVal.toLocaleString('id-ID') + '</td>';
+        html += '  <td class="p-2.5 text-right text-gray-400 font-mono text-[11px] bg-emerald-50/30">-</td>';
+        html += '</tr>';
+      }
+
+      familyGroupIndex++;
+    }
+
+    tbody.innerHTML = html;
+
+    var footHtml = '';
+    footHtml += '<tr class="bg-emerald-100 font-black text-center text-xs text-emerald-950 border-t-2 border-emerald-400">';
+    footHtml += '  <td colspan="4" class="p-3 text-left uppercase tracking-wider">GRAND TOTAL TABUNGAN WARGA:</td>';
+    footHtml += '  <td colspan="3" class="p-3 text-right text-emerald-800 font-black text-sm font-mono">Rp ' + grandTotalTabungan.toLocaleString('id-ID') + '</td>';
+    footHtml += '</tr>';
+    tfoot.innerHTML = footHtml;
+
+    openModal('modal-rekap-tabungan');
+  }
+
+  function switchInfoHari(hari) {
+    appState.currentInfoHari = hari;
+    document.getElementById('info-current-hari-label').textContent = hari.toUpperCase();
+
+    var btn1 = document.getElementById('btn-info-hari1');
+    var btn2 = document.getElementById('btn-info-hari2');
+
+    if (hari === 'Hari 1') {
+      btn1.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition bg-[#5A56EC] text-white shadow-sm';
+      btn2.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition text-gray-600 hover:text-gray-900';
+    } else {
+      btn2.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition bg-[#5A56EC] text-white shadow-sm';
+      btn1.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition text-gray-600 hover:text-gray-900';
+    }
+
+    renderInfoTab();
+  }
+
+  function renderInfoTab() {
+    renderRundownList();
+    renderKontakList();
+  }
+
+  function renderRundownList() {
+    var container = document.getElementById('rundown-items-container');
+    if (!container) return;
+
+    var currentHari = appState.currentInfoHari || 'Hari 1';
+    var filtered = (appState.rundownList || []).filter(function(item) {
+      return item.hari === currentHari;
+    });
+
+    if (!filtered || filtered.length === 0) {
+      container.innerHTML = '<div class="text-center py-6 text-gray-400">Belum ada agenda untuk ' + currentHari + '.</div>';
+      return;
+    }
+
+    var html = '';
+
+    for (var i = 0; i < filtered.length; i++) {
+      var rd = filtered[i];
+
+      html += '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 md:p-4 rounded-2xl border border-gray-100 shadow-sm transition hover:shadow-md">';
+      html += '  <div class="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">';
+      html += '    <span class="w-28 sm:w-36 flex-shrink-0 text-center font-extrabold text-[#EA6A9C] bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-xl text-xs font-mono">' + escapeHtml(rd.jam) + '</span>';
+      html += '    <div class="min-w-0 flex-1 pl-1">';
+      html += '      <p class="font-bold text-[#1E2238] text-xs md:text-sm">' + escapeHtml(rd.judul) + '</p>';
+      html += '      <p class="text-gray-500 text-[11px] mt-0.5">' + escapeHtml(rd.keterangan || '-') + '</p>';
+      html += '    </div>';
+      html += '  </div>';
+
+      if (appState.adminRole) {
+        html += '  <div class="flex items-center gap-1.5 self-end sm:self-center flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-gray-100 w-full sm:w-auto justify-end">';
+        html += '    <button onclick="openRundownModal(\'' + rd.id + '\')" class="px-2.5 py-1 bg-indigo-50 text-[#5A56EC] hover:bg-indigo-100 rounded-lg text-[11px] font-bold transition">Edit</button>';
+        html += '    <button onclick="deleteRundownProcess(\'' + rd.id + '\')" class="px-2.5 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-[11px] font-bold transition">Hapus</button>';
+        html += '  </div>';
+      }
+
+      html += '</div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  function renderKontakList() {
+    var container = document.getElementById('kontak-items-container');
+    if (!container) return;
+
+    var list = appState.kontakList || [];
+    if (!list || list.length === 0) {
+      container.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Belum ada kontak panitia terdaftar.</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < list.length; i++) {
+      var kt = list[i];
+      var waClean = (kt.noWhatsapp || '').replace(/\D/g, '');
+      if (waClean.startsWith('0')) waClean = '62' + waClean.substring(1);
+      var waUrl = "https://wa.me/" + waClean;
+
+      html += '<div class="flex items-center justify-between bg-white p-3 rounded-2xl border border-gray-100 shadow-sm text-xs">';
+      html += '  <div>';
+      html += '    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">' + escapeHtml(kt.jabatan) + '</p>';
+      html += '    <a href="' + waUrl + '" target="_blank" class="font-bold text-[#5A56EC] hover:underline text-xs flex items-center gap-1 mt-0.5">';
+      html += '      <span>' + escapeHtml(kt.nama) + ' (' + escapeHtml(kt.noWhatsapp) + ')</span>';
+      html += '    </a>';
+      html += '  </div>';
+
+      if (appState.adminRole) {
+        html += '  <div class="flex items-center gap-1.5">';
+        html += '    <button onclick="openKontakModal(\'' + kt.id + '\')" class="px-2 py-1 bg-indigo-50 text-[#5A56EC] hover:bg-indigo-100 rounded-lg text-[11px] font-bold transition">Edit</button>';
+        html += '    <button onclick="deleteKontakProcess(\'' + kt.id + '\')" class="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-[11px] font-bold transition">Hapus</button>';
+        html += '  </div>';
+      }
+
+      html += '</div>';
+    }
+
+    container.innerHTML = html;
+  }
+
+  function openRundownModal(id) {
+    var titleEl = document.getElementById('modal-rundown-title');
+    document.getElementById('rd-input-id').value = id || '';
+
+    if (id) {
+      titleEl.textContent = 'Edit Agenda Rundown';
+      var item = (appState.rundownList || []).find(function(x) { return x.id === id; });
+      if (item) {
+        document.getElementById('rd-input-hari').value = item.hari || appState.currentInfoHari;
+        document.getElementById('rd-input-jam').value = item.jam || '';
+        document.getElementById('rd-input-judul').value = item.judul || '';
+        document.getElementById('rd-input-keterangan').value = item.keterangan || '';
+      }
+    } else {
+      titleEl.textContent = 'Tambah Agenda Rundown';
+      document.getElementById('rd-input-hari').value = appState.currentInfoHari || 'Hari 1';
+      document.getElementById('rd-input-jam').value = '';
+      document.getElementById('rd-input-judul').value = '';
+      document.getElementById('rd-input-keterangan').value = '';
+    }
+
+    openModal('modal-rundown-crud');
+  }
+
+  function saveRundownProcess() {
+    var btn = document.getElementById('btn-save-rd');
+    btn.disabled = true;
+
+    var payload = {
+      id: document.getElementById('rd-input-id').value,
+      hari: document.getElementById('rd-input-hari').value,
+      jam: document.getElementById('rd-input-jam').value,
+      judul: document.getElementById('rd-input-judul').value,
+      keterangan: document.getElementById('rd-input-keterangan').value
+    };
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          if (res && res.success) {
+            closeModal('modal-rundown-crud');
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menyimpan agenda', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .saveRundownItem(payload, appState.adminRole);
+    } else {
+      btn.disabled = false;
+      closeModal('modal-rundown-crud');
+      if (!payload.id) {
+        payload.id = 'RD-00' + (appState.rundownList.length + 1);
+        appState.rundownList.push(payload);
+      } else {
+        for (var i = 0; i < appState.rundownList.length; i++) {
+          if (appState.rundownList[i].id === payload.id) {
+            appState.rundownList[i] = payload;
+            break;
+          }
+        }
+      }
+      showToast('Preview: Agenda ' + payload.judul + ' berhasil disimpan!', 'success');
+      renderInfoTab();
+    }
+  }
+
+  function deleteRundownProcess(id) {
+    if (!confirm('Apakah Anda yakin ingin menghapus agenda ini?')) return;
+
+    showToast('Menghapus agenda...', 'info');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menghapus', 'error');
+          }
+        })
+        .deleteRundownItem(id, appState.adminRole);
+    } else {
+      appState.rundownList = appState.rundownList.filter(function(x) { return x.id !== id; });
+      showToast('Preview: Agenda berhasil dihapus.', 'success');
+      renderInfoTab();
+    }
+  }
+
+  function openKontakModal(id) {
+    var titleEl = document.getElementById('modal-kontak-title');
+    document.getElementById('kt-input-id').value = id || '';
+
+    if (id) {
+      titleEl.textContent = 'Edit Kontak Panitia';
+      var item = (appState.kontakList || []).find(function(x) { return x.id === id; });
+      if (item) {
+        document.getElementById('kt-input-jabatan').value = item.jabatan || '';
+        document.getElementById('kt-input-nama').value = item.nama || '';
+        document.getElementById('kt-input-whatsapp').value = item.noWhatsapp || '';
+      }
+    } else {
+      titleEl.textContent = 'Tambah Kontak Panitia';
+      document.getElementById('kt-input-jabatan').value = '';
+      document.getElementById('kt-input-nama').value = '';
+      document.getElementById('kt-input-whatsapp').value = '';
+    }
+
+    openModal('modal-kontak-crud');
+  }
+
+  function saveKontakProcess() {
+    var btn = document.getElementById('btn-save-kt');
+    btn.disabled = true;
+
+    var payload = {
+      id: document.getElementById('kt-input-id').value,
+      jabatan: document.getElementById('kt-input-jabatan').value,
+      nama: document.getElementById('kt-input-nama').value,
+      noWhatsapp: document.getElementById('kt-input-whatsapp').value
+    };
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          if (res && res.success) {
+            closeModal('modal-kontak-crud');
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menyimpan kontak', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .savePanitiaContact(payload, appState.adminRole);
+    } else {
+      btn.disabled = false;
+      closeModal('modal-kontak-crud');
+      if (!payload.id) {
+        payload.id = 'KT-00' + (appState.kontakList.length + 1);
+        appState.kontakList.push(payload);
+      } else {
+        for (var i = 0; i < appState.kontakList.length; i++) {
+          if (appState.kontakList[i].id === payload.id) {
+            appState.kontakList[i] = payload;
+            break;
+          }
+        }
+      }
+      showToast('Preview: Kontak ' + payload.nama + ' berhasil disimpan!', 'success');
+      renderInfoTab();
+    }
+  }
+
+  function deleteKontakProcess(id) {
+    if (!confirm('Apakah Anda yakin ingin menghapus kontak panitia ini?')) return;
+
+    showToast('Menghapus kontak...', 'info');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menghapus', 'error');
+          }
+        })
+        .deletePanitiaContact(id, appState.adminRole);
+    } else {
+      appState.kontakList = appState.kontakList.filter(function(x) { return x.id !== id; });
+      showToast('Preview: Kontak berhasil dihapus.', 'success');
+      renderInfoTab();
+    }
+  }
+
+  function onAdminLoginSuccess() {
+    document.getElementById('btn-open-login').classList.add('hidden');
+    document.getElementById('admin-badge').classList.remove('hidden');
+    document.getElementById('admin-role-text').textContent = appState.adminRole;
+    document.getElementById('admin-swap-indicator').classList.remove('hidden');
+    document.getElementById('btn-admin-print-bus').classList.remove('hidden');
+
+    var btnAddRD = document.getElementById('btn-admin-add-rundown');
+    var btnAddKT = document.getElementById('btn-admin-add-kontak');
+    if (btnAddRD) btnAddRD.classList.remove('hidden');
+    if (btnAddKT) btnAddKT.classList.remove('hidden');
+
+    if (appState.adminRole === 'Super Admin') {
+      var superPanel = document.getElementById('super-admin-panel');
+      if (superPanel) superPanel.classList.remove('hidden');
+    }
+
+    renderAll();
+  }
+
+  function logoutAdmin() {
+    appState.adminRole = null;
+    appState.selectedSeatForSwap = null;
+    document.getElementById('btn-open-login').classList.remove('hidden');
+    document.getElementById('admin-badge').classList.add('hidden');
+    document.getElementById('admin-swap-indicator').classList.add('hidden');
+    document.getElementById('btn-admin-print-bus').classList.add('hidden');
+    
+    var btnAddRD = document.getElementById('btn-admin-add-rundown');
+    var btnAddKT = document.getElementById('btn-admin-add-kontak');
+    if (btnAddRD) btnAddRD.classList.add('hidden');
+    if (btnAddKT) btnAddKT.classList.add('hidden');
+
+    var superPanel = document.getElementById('super-admin-panel');
+    if (superPanel) superPanel.classList.add('hidden');
+
+    showToast('Keluar dari mode Admin', 'info');
+    renderAll();
+  }
+
+  function switchTab(tabId) {
+    var tabs = ['tab-form', 'tab-list', 'tab-bus', 'tab-info'];
+    for (var i = 0; i < tabs.length; i++) {
+      var el = document.getElementById(tabs[i]);
+      var btn = document.getElementById('nav-' + tabs[i]);
+      if (tabs[i] === tabId) {
+        if (el) el.classList.remove('hidden');
+        if (btn) btn.className = 'flex-1 py-2 px-2.5 rounded-xl text-xs md:text-sm font-bold transition bg-[#EA6A9C] text-white shadow-sm';
+      } else {
+        if (el) el.classList.add('hidden');
+        if (btn) btn.className = 'flex-1 py-2 px-2.5 rounded-xl text-xs md:text-sm font-bold text-[#7E859E] hover:text-[#1E2238] transition';
+      }
+    }
+    if (tabId === 'tab-bus') {
+      renderBusSeats();
+    }
+    if (tabId === 'tab-info') {
+      renderInfoTab();
+    }
   }
 
   function renderStats() {
     var s = appState.stats || {};
     document.getElementById('stat-total-warga').textContent = s.totalWarga || 0;
-    document.getElementById('stat-kursi-bus1').textContent = (s.kursiTerisiBus1 || 0) + ' / 54';
-    document.getElementById('stat-kursi-bus2').textContent = (s.kursiTerisiBus2 || 0) + ' / 54';
-    document.getElementById('stat-status-lunas').textContent = s.totalLunas || 0;
+    document.getElementById('stat-kursi-bus1').textContent = (s.kursiTerisiBus1 || 0) + ' / 33';
+    document.getElementById('stat-kursi-bus2').textContent = (s.kursiTerisiBus2 || 0) + ' / 33';
+    
+    var totalTab = s.totalTabungan || 0;
+    document.getElementById('stat-total-tabungan').textContent = 'Rp ' + totalTab.toLocaleString('id-ID');
 
-    document.getElementById('badge-bus1-count').textContent = '(' + (s.kursiTerisiBus1 || 0) + '/54)';
-    document.getElementById('badge-bus2-count').textContent = '(' + (s.kursiTerisiBus2 || 0) + '/54)';
+    document.getElementById('badge-bus1-count').textContent = '(' + (s.kursiTerisiBus1 || 0) + '/33)';
+    document.getElementById('badge-bus2-count').textContent = '(' + (s.kursiTerisiBus2 || 0) + '/33)';
   }
 
   function renderParticipantList() {
@@ -116,64 +626,70 @@
     var list = appState.peserta;
 
     if (!list || list.length === 0) {
-      container.innerHTML = '<div class="card-modern p-10 text-center text-gray-400 text-sm">Tidak ada peserta yang cocok dengan kriteria pencarian.</div>';
+      container.innerHTML = '<div class="card-modern p-10 text-center text-gray-400 text-sm">Tidak ada peserta yang cocok dengan pencarian.</div>';
       return;
     }
 
     var html = '';
     for (var i = 0; i < list.length; i++) {
       var p = list[i];
-      var isLunas = (p.statusPembayaran === 'Lunas');
-      var badgeBg = isLunas ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-amber-50 text-amber-600 border border-amber-200';
+
+      var totalTabunganKeluarga = p.jumlahTabungan || 0;
+      if (p.familyMembers && p.familyMembers.length > 0) {
+        for (var f = 0; f < p.familyMembers.length; f++) {
+          totalTabunganKeluarga += (p.familyMembers[f].jumlahTabungan || 0);
+        }
+      }
+
+      var hasTabungan = totalTabunganKeluarga > 0;
+      var badgeBg = hasTabungan ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-500 border border-gray-200';
 
       var famHtml = '';
       if (p.familyMembers && p.familyMembers.length > 0) {
-        famHtml += '<div class="mt-4 pt-3 border-t border-gray-100 space-y-2">';
-        famHtml += '<p class="text-[11px] font-bold uppercase text-gray-400 tracking-wider">Anggota Keluarga Terdaftar:</p>';
-        for (var f = 0; f < p.familyMembers.length; f++) {
-          var mem = p.familyMembers[f];
-          famHtml += '<div class="flex items-center justify-between bg-gray-50/80 px-3.5 py-2 rounded-xl text-xs">';
+        famHtml += '<div class="mt-3 pt-2.5 border-t border-gray-100 space-y-1.5">';
+        famHtml += '<p class="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Anggota Keluarga Terdaftar:</p>';
+        for (var fm = 0; fm < p.familyMembers.length; fm++) {
+          var mem = p.familyMembers[fm];
+          famHtml += '<div class="flex items-center justify-between bg-gray-50/80 px-3 py-1.5 rounded-xl text-xs">';
           famHtml += '  <div class="flex items-center gap-2">';
           famHtml += '    <span class="w-1.5 h-1.5 rounded-full bg-[#5A56EC]"></span>';
           famHtml += '    <span class="font-bold text-[#1E2238]">' + escapeHtml(mem.nama) + '</span>';
-          famHtml += '    <span class="text-gray-400">(' + escapeHtml(mem.hubungan) + ')</span>';
+          famHtml += '    <span class="text-gray-400 text-[11px]">(' + escapeHtml(mem.hubungan) + ')</span>';
           famHtml += '  </div>';
-          famHtml += '  <span class="text-[10px] text-gray-400 font-mono">' + escapeHtml(mem.id) + '</span>';
           famHtml += '</div>';
         }
         famHtml += '</div>';
       }
 
-      /* Logika Akses Pembayaran: Admin biasa hanya bisa tandai Lunas, Super Admin bisa bolak-balik */
       var adminActionsHtml = '';
       if (appState.adminRole) {
-        adminActionsHtml += '<div class="flex items-center gap-2 mt-4 pt-3 border-t border-gray-100">';
-        if (!isLunas) {
-          adminActionsHtml += '<button onclick="changePaymentStatus(\'' + p.id + '\', \'Lunas\')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition">Tandai Lunas</button>';
-        } else if (appState.adminRole === 'Super Admin') {
-          adminActionsHtml += '<button onclick="changePaymentStatus(\'' + p.id + '\', \'Menunggu Konfirmasi\')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition">Ubah ke Menunggu</button>';
-        }
-        adminActionsHtml += '<button onclick="deleteParticipantProcess(\'' + p.id + '\')" class="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-bold transition">Hapus</button>';
+        adminActionsHtml += '<div class="flex items-center gap-2 mt-3 pt-2.5 border-t border-gray-100">';
+        adminActionsHtml += '  <button onclick="openTabunganModal(\'' + p.id + '\', \'' + escapeHtml(p.nama) + '\', ' + totalTabunganKeluarga + ', \'' + escapeHtml(p.noWhatsapp || '') + '\')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">';
+        adminActionsHtml += '    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>';
+        adminActionsHtml += '    <span>Setor / Log Tabungan</span>';
+        adminActionsHtml += '  </button>';
+        adminActionsHtml += '  <button onclick="deleteParticipantProcess(\'' + p.id + '\')" class="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-bold transition">Hapus</button>';
         adminActionsHtml += '</div>';
       }
 
-      html += '<div class="card-modern p-5 md:p-6">';
+      html += '<div class="card-modern p-4 md:p-5">';
       html += '  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">';
-      html += '    <div class="flex items-start gap-3.5">';
-      html += '      <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#FF7EB3] to-[#EA6A9C] text-white font-black flex items-center justify-center text-sm shadow-md shadow-pink-500/10 flex-shrink-0">' + p.nama.charAt(0).toUpperCase() + '</div>';
+      html += '    <div class="flex items-start gap-3">';
+      html += '      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#FF7EB3] to-[#EA6A9C] text-white font-black flex items-center justify-center text-sm shadow-md shadow-pink-500/10 flex-shrink-0">' + p.nama.charAt(0).toUpperCase() + '</div>';
       html += '      <div>';
       html += '        <div class="flex items-center gap-2">';
-      html += '          <h3 class="font-extrabold text-[#1E2238] text-base">' + escapeHtml(p.nama) + '</h3>';
+      html += '          <h3 class="font-extrabold text-[#1E2238] text-sm md:text-base">' + escapeHtml(p.nama) + '</h3>';
       html += '          <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 font-bold">' + p.id + '</span>';
       html += '        </div>';
       html += '        <p class="text-xs text-gray-500 mt-0.5 font-medium">' + escapeHtml(p.noRumah) + ' • <span class="text-gray-400">' + escapeHtml(p.catatanLokasi) + '</span> • <span class="text-[#5A56EC] font-bold">WA: ' + escapeHtml(p.noWhatsapp || '-') + '</span></p>';
       html += '      </div>';
       html += '    </div>';
-      html += '    <div class="flex items-center gap-2.5 self-start md:self-auto">';
-      html += '      <span class="px-3 py-1 rounded-full text-xs font-bold ' + badgeBg + '">' + p.statusPembayaran + '</span>';
+      html += '    <div class="flex items-center gap-2 self-start md:self-auto">';
+      html += '      <button onclick="openTabunganModal(\'' + p.id + '\', \'' + escapeHtml(p.nama) + '\', ' + totalTabunganKeluarga + ', \'' + escapeHtml(p.noWhatsapp || '') + '\')" class="px-3 py-1 rounded-full text-xs font-extrabold ' + badgeBg + ' flex items-center gap-1.5 hover:opacity-90 transition shadow-sm">';
+      html += '        <span>Tabungan: Rp ' + totalTabunganKeluarga.toLocaleString('id-ID') + '</span>';
+      html += '      </button>';
       html += '      <button onclick="openAddFamilyModal(\'' + p.id + '\', \'' + escapeHtml(p.nama) + '\')" class="btn-action bg-[#5A56EC] hover:bg-[#4844d1] text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">';
-      html += '        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>';
-      html += '        <span>Tambah Anggota</span>';
+      html += '        <span>+ Keluarga</span>';
       html += '      </button>';
       html += '    </div>';
       html += '  </div>';
@@ -187,7 +703,7 @@
 
   function switchBusView(busId) {
     appState.currentBusId = busId;
-    document.getElementById('current-bus-title-tag').textContent = busId.toUpperCase();
+    document.getElementById('current-bus-title-tag').textContent = busId.toUpperCase() + ' (MEDIUM 33 SEAT)';
 
     var btn1 = document.getElementById('btn-bus-1');
     var btn2 = document.getElementById('btn-bus-2');
@@ -205,7 +721,7 @@
 
   function renderBusSeats() {
     var rowsContainer = document.getElementById('bus-rows-container');
-    var row11Container = document.getElementById('bus-row-11-container');
+    var row8Container = document.getElementById('bus-row-8-container');
     
     var allSeats = appState.seats || [];
     var seats = allSeats.filter(function(x) { return x.idBus === appState.currentBusId; });
@@ -218,35 +734,34 @@
     }
 
     var rowsHtml = '';
-    for (var r = 1; r <= 10; r++) {
+    for (var r = 1; r <= 7; r++) {
       var currentSeats = rowsMap[r] || [];
-      var seatA = currentSeats.find(function(x) { return x.noKursi.indexOf('A') !== -1; }) || { idBus: appState.currentBusId, noKursi: r + 'A' };
-      var seatB = currentSeats.find(function(x) { return x.noKursi.indexOf('B') !== -1; }) || { idBus: appState.currentBusId, noKursi: r + 'B' };
-      var seatC = currentSeats.find(function(x) { return x.noKursi.indexOf('C') !== -1; }) || { idBus: appState.currentBusId, noKursi: r + 'C' };
-      var seatD = currentSeats.find(function(x) { return x.noKursi.indexOf('D') !== -1; }) || { idBus: appState.currentBusId, noKursi: r + 'D' };
-      var seatE = currentSeats.find(function(x) { return x.noKursi.indexOf('E') !== -1; }) || { idBus: appState.currentBusId, noKursi: r + 'E' };
+      
+      var seat1 = currentSeats[0] || { idBus: appState.currentBusId, noKursi: ('0' + ((r-1)*4+1)).slice(-2) };
+      var seat2 = currentSeats[1] || { idBus: appState.currentBusId, noKursi: ('0' + ((r-1)*4+2)).slice(-2) };
+      var seat3 = currentSeats[2] || { idBus: appState.currentBusId, noKursi: ('0' + ((r-1)*4+3)).slice(-2) };
+      var seat4 = currentSeats[3] || { idBus: appState.currentBusId, noKursi: ('0' + ((r-1)*4+4)).slice(-2) };
 
-      rowsHtml += '<div class="flex items-center gap-2">';
-      rowsHtml += '  <div class="grid grid-cols-2 gap-2 w-5/12">';
-      rowsHtml += renderSingleSeatCard(seatA);
-      rowsHtml += renderSingleSeatCard(seatB);
+      rowsHtml += '<div class="flex items-center gap-2 md:gap-3">';
+      rowsHtml += '  <div class="grid grid-cols-2 gap-1.5 md:gap-2 w-5/12">';
+      rowsHtml += renderSingleSeatCard(seat1);
+      rowsHtml += renderSingleSeatCard(seat2);
       rowsHtml += '  </div>';
-      rowsHtml += '  <div class="w-2/12 text-center text-[10px] font-extrabold text-gray-300 tracking-wider">R' + r + '</div>';
-      rowsHtml += '  <div class="grid grid-cols-3 gap-2 w-5/12">';
-      rowsHtml += renderSingleSeatCard(seatC);
-      rowsHtml += renderSingleSeatCard(seatD);
-      rowsHtml += renderSingleSeatCard(seatE);
+      rowsHtml += '  <div class="w-2/12 text-center text-[10px] md:text-xs font-extrabold text-gray-400 tracking-wider">Baris ' + r + '</div>';
+      rowsHtml += '  <div class="grid grid-cols-2 gap-1.5 md:gap-2 w-5/12">';
+      rowsHtml += renderSingleSeatCard(seat3);
+      rowsHtml += renderSingleSeatCard(seat4);
       rowsHtml += '  </div>';
       rowsHtml += '</div>';
     }
     rowsContainer.innerHTML = rowsHtml;
 
-    var row11Seats = rowsMap[11] || [];
-    var row11Html = '';
-    for (var b = 0; b < row11Seats.length; b++) {
-      row11Html += renderSingleSeatCard(row11Seats[b]);
+    var row8Seats = rowsMap[8] || [];
+    var row8Html = '';
+    for (var b = 0; b < row8Seats.length; b++) {
+      row8Html += renderSingleSeatCard(row8Seats[b]);
     }
-    row11Container.innerHTML = row11Html;
+    row8Container.innerHTML = row8Html;
   }
 
   function renderSingleSeatCard(seat) {
@@ -255,28 +770,38 @@
     
     var bgClass = isOccupied ? 'bg-[#265768] text-white shadow-sm' : 'bg-white border-2 border-dashed border-gray-200 text-gray-400';
     var selectClass = isSelected ? 'seat-selected-swap' : '';
-    var cursorClass = appState.adminRole ? 'cursor-pointer hover:border-[#EA6A9C]' : 'cursor-default';
+    var cursorClass = 'cursor-pointer hover:border-[#EA6A9C]';
     var displayName = isOccupied ? escapeHtml(seat.namaTerisi) : 'Kosong';
 
+    var formattedSeatNo = ('0' + seat.noKursi).slice(-2);
+
     var out = '';
-    out += '<div onclick="handleSeatClick(\'' + seat.idBus + '\', \'' + seat.noKursi + '\')" class="card-seat p-2 text-center flex flex-col justify-center min-h-[58px] ' + bgClass + ' ' + selectClass + ' ' + cursorClass + '">';
-    out += '  <div class="flex items-center justify-between mb-0.5">';
-    out += '    <span class="text-[10px] font-black uppercase tracking-wider ' + (isOccupied ? 'text-pink-300' : 'text-gray-400') + '">' + seat.noKursi + '</span>';
+    out += '<div onclick="handleSeatClick(\'' + seat.idBus + '\', \'' + seat.noKursi + '\', \'' + escapeHtml(seat.namaTerisi || '') + '\')" class="card-seat p-1.5 text-center flex flex-col justify-between min-h-[64px] md:min-h-[68px] ' + bgClass + ' ' + selectClass + ' ' + cursorClass + '">';
+    out += '  <div class="flex items-center justify-between mb-0.5 pointer-events-none">';
+    out += '    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider ' + (isOccupied ? 'text-pink-300' : 'text-gray-400') + '">' + formattedSeatNo + '</span>';
     if (isOccupied) {
       out += '    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>';
     }
     out += '  </div>';
-    out += '  <div class="text-[11px] font-bold truncate leading-tight">' + displayName + '</div>';
+    out += '  <div class="text-[10px] md:text-xs font-bold leading-tight break-words line-clamp-2 my-auto pointer-events-none">' + displayName + '</div>';
     out += '</div>';
     return out;
   }
 
-  function handleSeatClick(busId, seatNo) {
-    if (!appState.adminRole) return;
+  function handleSeatClick(busId, seatNo, namaTerisi) {
+    var formattedNo = ('0' + seatNo).slice(-2);
+    if (!appState.adminRole) {
+      if (namaTerisi && namaTerisi.trim() !== '') {
+        showToast('🚍 Kursi ' + busId + ' (' + formattedNo + '): ' + namaTerisi, 'info');
+      } else {
+        showToast('🚍 Kursi ' + busId + ' (' + formattedNo + ') masih KOSONG.', 'info');
+      }
+      return;
+    }
 
     if (!appState.selectedSeatForSwap) {
       appState.selectedSeatForSwap = { busId: busId, seatNo: seatNo };
-      showToast('Kursi (' + busId + ' - ' + seatNo + ') dipilih. Klik kursi lain untuk swap.', 'info');
+      showToast('Kursi (' + busId + ' - ' + formattedNo + ') dipilih. Klik kursi lain untuk swap.', 'info');
       renderBusSeats();
     } else {
       if (appState.selectedSeatForSwap.busId === busId && appState.selectedSeatForSwap.seatNo === seatNo) {
@@ -323,7 +848,8 @@
       nama: document.getElementById('reg-nama').value,
       noWhatsapp: document.getElementById('reg-whatsapp').value,
       noRumah: document.getElementById('reg-norumah').value,
-      catatanLokasi: document.getElementById('reg-catatan').value
+      catatanLokasi: document.getElementById('reg-catatan').value,
+      setoranAwal: document.getElementById('reg-setoran-awal').value || 0
     };
 
     if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -334,7 +860,7 @@
           if (res && res.success) {
             document.getElementById('form-register').reset();
             loadDataFromBackend();
-            setupSuccessModalAndWaLink(res.nama, res.idTransaksi, res.assignedBus, res.assignedSeat, res.pinAkses);
+            setupSuccessModalAndWaLink(res.nama, res.idTransaksi, res.assignedBus, res.assignedSeat, res.pinAkses, res.setoranAwal);
             openModal('modal-success-reg');
           } else {
             showToast(res ? res.message : 'Gagal mendaftar', 'error');
@@ -353,7 +879,7 @@
         var generatedPin = String(Math.floor(1000 + Math.random() * 9000));
         var dummyId = 'HAL-000' + (appState.peserta.length + 1);
         
-        setupSuccessModalAndWaLink(payload.nama, dummyId, 'Bus 1', '1E', generatedPin);
+        setupSuccessModalAndWaLink(payload.nama, dummyId, 'Bus 1', '01', generatedPin, payload.setoranAwal);
         openModal('modal-success-reg');
         document.getElementById('form-register').reset();
         loadDataFromBackend();
@@ -361,86 +887,458 @@
     }
   }
 
-  function setupSuccessModalAndWaLink(nama, idTransaksi, busId, seat, pin) {
+  function setupSuccessModalAndWaLink(nama, idTransaksi, busId, seat, pin, setoranAwal) {
     document.getElementById('succ-pin-display').textContent = pin || '1234';
     document.getElementById('succ-id-display').textContent = idTransaksi || 'HAL-XXXX';
     document.getElementById('succ-bus-display').textContent = busId || 'Bus 1';
-    document.getElementById('succ-seat-display').textContent = seat || '1A';
+    document.getElementById('succ-seat-display').textContent = ('0' + seat).slice(-2) || '01';
+
+    var setoranVal = parseInt(setoranAwal || 0, 10);
+    document.getElementById('succ-tabungan-display').textContent = 'Rp ' + setoranVal.toLocaleString('id-ID');
 
     var waMessage = "Assalamu'alaikum Admin Halal Bihalal RT,\n\n" +
       "Saya telah mendaftar peserta Halal Bihalal dengan rincian berikut:\n" +
       "• *Nama*: " + nama + "\n" +
       "• *ID Transaksi*: " + idTransaksi + "\n" +
       "• *Armada*: " + busId + "\n" +
-      "• *Nomor Kursi*: " + seat + "\n" +
+      "• *Nomor Kursi*: " + ('0' + seat).slice(-2) + "\n" +
       "• *PIN Akses Warga*: " + pin + "\n" +
-      "• *Pembayaran*: Tunai (Cash)\n\n" +
+      "• *Setoran Awal Tabungan*: Rp " + setoranVal.toLocaleString('id-ID') + "\n\n" +
       "Mohon konfirmasi pendaftaran saya. Terima kasih!";
 
     var encodedMessage = encodeURIComponent(waMessage);
     document.getElementById('btn-wa-confirm').href = "https://wa.me/" + appState.adminWaPhone + "?text=" + encodedMessage;
   }
 
+  function openTabunganModal(idTransaksi, namaPeserta, totalTabungan, noWhatsapp) {
+    appState.activeTabunganPeserta = { id: idTransaksi, nama: namaPeserta, total: totalTabungan, wa: noWhatsapp };
+    
+    document.getElementById('tabungan-modal-nama').textContent = namaPeserta;
+    document.getElementById('tabungan-modal-id').textContent = idTransaksi;
+    document.getElementById('tabungan-modal-total').textContent = 'Rp ' + (totalTabungan || 0).toLocaleString('id-ID');
+    document.getElementById('input-setoran-nominal').value = '';
+
+    var formContainer = document.getElementById('admin-setor-form-container');
+    if (appState.adminRole) {
+      formContainer.classList.remove('hidden');
+    } else {
+      formContainer.classList.add('hidden');
+    }
+
+    fetchTabunganLogs(idTransaksi);
+    openModal('modal-tabungan');
+  }
+
+  function fetchTabunganLogs(idTransaksi) {
+    var historyContainer = document.getElementById('tabungan-log-history');
+    historyContainer.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Memuat riwayat log keluarga...</div>';
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success && res.logs) {
+            renderTabunganLogs(res.logs);
+          } else {
+            historyContainer.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Belum ada riwayat setoran.</div>';
+          }
+        })
+        .withFailureHandler(function(err) {
+          historyContainer.innerHTML = '<div class="text-center py-4 text-xs text-rose-500">Gagal memuat log.</div>';
+        })
+        .getTabunganLog(idTransaksi);
+    } else {
+      renderTabunganLogs([
+        { idLog: 'LOG-0002', tanggal: '12/09/2026 14:20:00', nominalSetoran: 300000, totalTabungan: 500000, adminPenyetor: 'Admin' },
+        { idLog: 'LOG-0001', tanggal: '10/09/2026 10:00:00', nominalSetoran: 200000, totalTabungan: 200000, adminPenyetor: 'Pendaftaran Awal' }
+      ]);
+    }
+  }
+
+  function renderTabunganLogs(logs) {
+    var historyContainer = document.getElementById('tabungan-log-history');
+    if (!logs || logs.length === 0) {
+      historyContainer.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Belum ada riwayat setoran.</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < logs.length; i++) {
+      var l = logs[i];
+      var waReceiptMsg = encodeURIComponent(
+        "🧾 *KWITANSI SETORAN TABUNGAN HALAL BIHALAL*\n\n" +
+        "• *No. Log*: " + l.idLog + "\n" +
+        "• *ID Transaksi*: " + l.idTransaksi + "\n" +
+        "• *Nama*: " + l.namaPeserta + "\n" +
+        "• *Tanggal*: " + l.tanggal + "\n" +
+        "• *Nominal Setor*: Rp " + l.nominalSetoran.toLocaleString('id-ID') + "\n" +
+        "• *Total Saldo Tabungan*: Rp " + l.totalTabungan.toLocaleString('id-ID') + "\n\n" +
+        "Terima kasih atas setoran tabungannya! Pengurus RT."
+      );
+      var waReceiptUrl = "https://wa.me/" + (appState.activeTabunganPeserta.wa || appState.adminWaPhone) + "?text=" + waReceiptMsg;
+
+      html += '<div class="flex items-center justify-between bg-gray-50 border border-gray-100 p-3 rounded-xl text-xs">';
+      html += '  <div>';
+      html += '    <p class="font-extrabold text-[#1E2238]">Setor: Rp ' + l.nominalSetoran.toLocaleString('id-ID') + '</p>';
+      html += '    <p class="text-[10px] text-gray-400 mt-0.5">' + l.tanggal + ' • oleh <span class="font-bold text-gray-600">' + escapeHtml(l.adminPenyetor) + '</span></p>';
+      html += '  </div>';
+      html += '  <a href="' + waReceiptUrl + '" target="_blank" title="Kirim Kwitansi WA" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-[11px] font-bold flex items-center gap-1 transition border border-emerald-200">';
+      html += '    <span>📲 Kwitansi WA</span>';
+      html += '  </a>';
+      html += '</div>';
+    }
+    historyContainer.innerHTML = html;
+  }
+
+  function submitTabunganDeposit() {
+    if (!appState.activeTabunganPeserta) return;
+    var nominalInput = document.getElementById('input-setoran-nominal');
+    var nominalVal = parseInt(nominalInput.value, 10);
+
+    if (isNaN(nominalVal) || nominalVal <= 0) {
+      showToast('Masukkan nominal setoran tabungan yang valid!', 'error');
+      return;
+    }
+
+    var btn = document.getElementById('btn-submit-setor');
+    btn.disabled = true;
+    btn.textContent = 'Menyimpan...';
+
+    var targetId = appState.activeTabunganPeserta.id;
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = 'Tambah Setoran';
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            nominalInput.value = '';
+            appState.activeTabunganPeserta.total = res.totalTabungan;
+            document.getElementById('tabungan-modal-total').textContent = 'Rp ' + res.totalTabungan.toLocaleString('id-ID');
+            fetchTabunganLogs(targetId);
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menambah setoran', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = 'Tambah Setoran';
+          showToast('Error: ' + err.message, 'error');
+        })
+        .addTabunganDeposit(targetId, nominalVal, appState.adminRole);
+    } else {
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = 'Tambah Setoran';
+        var newTotal = (appState.activeTabunganPeserta.total || 0) + nominalVal;
+        appState.activeTabunganPeserta.total = newTotal;
+        document.getElementById('tabungan-modal-total').textContent = 'Rp ' + newTotal.toLocaleString('id-ID');
+        nominalInput.value = '';
+        showToast('Preview: Setoran Rp ' + nominalVal.toLocaleString('id-ID') + ' ditambahkan!', 'success');
+        fetchTabunganLogs(targetId);
+      }, 300);
+    }
+  }
+
+  function triggerBackupDatabase() {
+    showToast('Membuat backup database cadangan...', 'info');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success && res.backupJson) {
+            downloadBackupJsonFile_(res.backupJson, res.timestamp);
+          } else {
+            showToast(res ? res.message : 'Gagal membuat backup', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showToast('Error backup: ' + err.message, 'error');
+        })
+        .backupDatabase();
+    } else {
+      var sampleBackup = {
+        appName: 'Web App Halal Bihalal RT',
+        backupTime: new Date().toLocaleString('id-ID'),
+        data: { Peserta: appState.peserta }
+      };
+      downloadBackupJsonFile_(JSON.stringify(sampleBackup), 'Preview');
+    }
+  }
+
+  function triggerClearAllDatabase() {
+    if (appState.adminRole !== 'Super Admin') {
+      showToast('Akses ditolak. Fitur ini khusus Super Admin!', 'error');
+      return;
+    }
+
+    if (!confirm('⚠️ PERINGATAN KONTROL SUPER ADMIN:\n\nApakah Anda YAKIN ingin MENGHAPUS SELURUH DATABASE PESERTA, TABUNGAN, & ALOKASI KURSI BUS?\n\nSeluruh data pendaftar uji coba akan dikosongkan untuk persiapan LAUNCHING. Tindakan ini tidak dapat dibatalkan!')) {
+      return;
+    }
+
+    if (!confirm('🚨 KONFIRMASI TERAKHIR:\n\nSemua data peserta uji coba akan terhapus bersih. Klik OK untuk melanjutkan pengosongan database sekarang.')) {
+      return;
+    }
+
+    showToast('Mengosongkan seluruh database...', 'info');
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal mengosongkan database', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showToast('Error: ' + err.message, 'error');
+        })
+        .clearAllDatabase(appState.adminRole);
+    } else {
+      appState.peserta = [];
+      appState.seats.forEach(function(s) { s.idPeserta = ''; s.namaTerisi = ''; });
+      appState.stats = { totalWarga: 0, totalKepalaKeluarga: 0, totalTabungan: 0, kursiTerisiBus1: 0, kursiTerisiBus2: 0 };
+      renderAll();
+      showToast('Preview Mode: Seluruh database berhasil dikosongkan!', 'success');
+    }
+  }
+
+  function downloadBackupJsonFile_(jsonString, timestamp) {
+    var blob = new Blob([jsonString], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'BACKUP_HALAL_BIHALAL_RT_' + new Date().getTime() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('File backup JSON berhasil diunduh ke komputer/HP Anda!', 'success');
+  }
+
+  function handleRestoreFileSelect(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('input-restore-json').value = e.target.result;
+      showToast('File backup JSON berhasil dimuat ke form restore.', 'info');
+    };
+    reader.readAsText(file);
+  }
+
+  function triggerRestoreDatabase() {
+    var jsonVal = document.getElementById('input-restore-json').value;
+    if (!jsonVal || jsonVal.trim() === '') {
+      showToast('Pilih file backup atau tempelkan data JSON restore!', 'error');
+      return;
+    }
+
+    if (!confirm('Apakah Anda yakin ingin memulihkan seluruh database? Data saat ini akan diperbarui dari backup.')) {
+      return;
+    }
+
+    var btn = document.getElementById('btn-submit-restore');
+    btn.disabled = true;
+    btn.textContent = 'Memulihkan...';
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = 'Pulihkan Sekarang';
+          if (res && res.success) {
+            closeModal('modal-restore');
+            document.getElementById('input-restore-json').value = '';
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal restore database', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = 'Pulihkan Sekarang';
+          showToast('Error restore: ' + err.message, 'error');
+        })
+        .restoreDatabase(jsonVal);
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Pulihkan Sekarang';
+      closeModal('modal-restore');
+      showToast('Preview: Restore database berhasil dipulihkan!', 'success');
+    }
+  }
+
   function exportDataExcel() {
-    showToast('Menyiapkan file rekap...', 'info');
+    showToast('Menyiapkan file Excel belang keluarga...', 'info');
     if (typeof google !== 'undefined' && google.script && google.script.run) {
       google.script.run
         .withSuccessHandler(function(res) {
           if (res && res.success && res.exportRows) {
-            generateCsvDownload_(res.exportRows);
+            generateExcelDownload_(res.exportRows);
           } else {
             showToast('Gagal mengambil data ekspor', 'error');
           }
         })
         .getExportData();
     } else {
-      showToast('Mode Preview: Mengunduh contoh CSV...', 'success');
-      generateCsvDownload_([
-        { idTransaksi: 'HAL-0001', namaPeserta: 'Budi Santoso', noWhatsapp: '081234567890', noRumah: 'No. 12', idBus: 'Bus 1', noKursi: '1A', statusPembayaran: 'Lunas' }
+      generateExcelDownload_([
+        { idTransaksi: 'HAL-0001', tanggal: '12/09/2026', keluarga: 'Budi Santoso', noWhatsapp: '081234567890', namaPeserta: 'Budi Santoso', statusKeluarga: 'Kepala Keluarga', noRumah: 'No. 12', catatanLokasi: 'Dekat pos satpam', metodePembayaran: 'Tunai', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '01', familyCount: 3, isHead: true },
+        { idTransaksi: 'HAL-0002', tanggal: '12/09/2026', keluarga: 'Budi Santoso', noWhatsapp: '081234567890', namaPeserta: 'Siti Aminah', statusKeluarga: 'Istri', noRumah: 'No. 12', catatanLokasi: 'Dekat pos satpam', metodePembayaran: 'Tunai', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '02', familyCount: 3, isHead: false },
+        { idTransaksi: 'HAL-0003', tanggal: '12/09/2026', keluarga: 'Budi Santoso', noWhatsapp: '081234567890', namaPeserta: 'Rizky Pratama', statusKeluarga: 'Anak 1', noRumah: 'No. 12', catatanLokasi: 'Dekat pos satpam', metodePembayaran: 'Tunai', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '03', familyCount: 3, isHead: false },
+        { idTransaksi: 'HAL-0004', tanggal: '12/09/2026', keluarga: 'Dewi Lestari', noWhatsapp: '081876543210', namaPeserta: 'Dewi Lestari', statusKeluarga: 'Kepala Keluarga', noRumah: 'No. 5', catatanLokasi: 'Depan pohon mangga', metodePembayaran: 'Tunai', jumlahTabungan: 200000, idBus: 'Bus 1', noKursi: '04', familyCount: 1, isHead: true }
       ]);
     }
   }
 
-  function generateCsvDownload_(rows) {
+  function generateExcelDownload_(rows) {
     if (!rows || rows.length === 0) {
       showToast('Data ekspor kosong', 'error');
       return;
     }
 
-    var headers = ['ID Transaksi', 'Tanggal', 'Nama Peserta', 'No WhatsApp', 'PIN Akses', 'Alamat', 'No Rumah', 'Catatan Lokasi', 'Pembayaran', 'Status', 'Sponsor ID', 'Sponsor Nama', 'Hubungan', 'ID Bus', 'No Kursi'];
-    var csvContent = 'data:text/csv;charset=utf-8,';
-    csvContent += headers.join(',') + '\n';
+    var headers = [
+      'No', 
+      'Keluarga', 
+      'No. WhatsApp', 
+      'Nama Peserta', 
+      'Status Keluarga', 
+      'ID Transaksi', 
+      'Tanggal', 
+      'No. Rumah', 
+      'Catatan Lokasi', 
+      'Pembayaran', 
+      'Total Tabungan (Rp)', 
+      'Bus', 
+      'Kursi'
+    ];
 
-    for (var i = 0; i < rows.length; i++) {
+    var aoa = [headers];
+    var merges = [];
+    var rowStyles = [null];
+
+    var familyGroupIndex = 0;
+    var i = 0;
+
+    while (i < rows.length) {
       var r = rows[i];
-      var rowArray = [
-        '"' + (r.idTransaksi || '') + '"',
-        '"' + (r.tanggal || '') + '"',
-        '"' + (r.namaPeserta || '') + '"',
-        '"' + (r.noWhatsapp || '') + '"',
-        '"' + (r.pinAkses || '') + '"',
-        '"' + (r.alamat || '') + '"',
-        '"' + (r.noRumah || '') + '"',
-        '"' + (r.catatanLokasi || '') + '"',
-        '"' + (r.metodePembayaran || '') + '"',
-        '"' + (r.statusPembayaran || '') + '"',
-        '"' + (r.sponsorId || '-') + '"',
-        '"' + (r.sponsorNama || '-') + '"',
-        '"' + (r.hubungan || 'Kepala Keluarga') + '"',
-        '"' + (r.idBus || 'Belum Ada') + '"',
-        '"' + (r.noKursi || '-') + '"'
-      ];
-      csvContent += rowArray.join(',') + '\n';
+      var famCount = r.familyCount || 1;
+      var startRow = aoa.length;
+
+      var bgRgb = (familyGroupIndex % 2 === 0) ? 'F2F4F8' : 'FFFFFF';
+
+      for (var f = 0; f < famCount && (i + f) < rows.length; f++) {
+        var curr = rows[i + f];
+        var tabVal = parseInt(curr.jumlahTabungan || 0, 10);
+        var formattedTab = 'Rp ' + tabVal.toLocaleString('id-ID');
+        var formattedSeatNo = ('0' + curr.noKursi).slice(-2);
+
+        aoa.push([
+          (i + f + 1),
+          curr.keluarga || curr.namaPeserta,
+          curr.noWhatsapp || '-',
+          curr.namaPeserta,
+          curr.statusKeluarga || 'Kepala Keluarga',
+          curr.idTransaksi || '-',
+          curr.tanggal || '-',
+          curr.noRumah || '-',
+          curr.catatanLokasi || '-',
+          curr.metodePembayaran || 'Tunai',
+          formattedTab,
+          curr.idBus || '-',
+          formattedSeatNo || '-'
+        ]);
+
+        rowStyles.push(bgRgb);
+      }
+
+      if (famCount > 1) {
+        var endRow = startRow + famCount - 1;
+        merges.push({ s: { r: startRow, c: 1 }, e: { r: endRow, c: 1 } });
+        merges.push({ s: { r: startRow, c: 2 }, e: { r: endRow, c: 2 } });
+      }
+
+      familyGroupIndex++;
+      i += famCount;
     }
 
-    var encodedUri = encodeURI(csvContent);
-    var link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'REKAP_HALAL_BIHALAL_RT_' + new Date().getTime() + '.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast('File CSV berhasil diunduh!', 'success');
+    if (typeof XLSX !== 'undefined') {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+
+      if (merges.length > 0) {
+        ws['!merges'] = merges;
+      }
+
+      var range = XLSX.utils.decode_range(ws['!ref']);
+      for (var R = range.s.r; R <= range.e.r; ++R) {
+        var isHeader = (R === 0);
+        var rowBg = rowStyles[R] || 'FFFFFF';
+
+        for (var C = range.s.c; C <= range.e.c; ++C) {
+          var cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws[cellRef]) continue;
+
+          if (isHeader) {
+            ws[cellRef].s = {
+              fill: { fgColor: { rgb: 'EA6A9C' } },
+              font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10 },
+              alignment: { horizontal: 'center', vertical: 'center' },
+              border: {
+                top: { style: 'thin', color: { rgb: 'CCCCCC' } },
+                bottom: { style: 'medium', color: { rgb: 'EA6A9C' } },
+                left: { style: 'thin', color: { rgb: 'CCCCCC' } },
+                right: { style: 'thin', color: { rgb: 'CCCCCC' } }
+              }
+            };
+          } else {
+            ws[cellRef].s = {
+              fill: { fgColor: { rgb: rowBg } },
+              font: { sz: 9.5 },
+              alignment: { 
+                vertical: 'center', 
+                horizontal: (C === 0 || C === 5 || C === 6 || C === 11 || C === 12) ? 'center' : (C === 10 ? 'right' : 'left')
+              },
+              border: {
+                top: { style: 'thin', color: { rgb: 'E2E8F0' } },
+                bottom: { style: 'thin', color: { rgb: 'E2E8F0' } },
+                left: { style: 'thin', color: { rgb: 'E2E8F0' } },
+                right: { style: 'thin', color: { rgb: 'E2E8F0' } }
+              }
+            };
+          }
+        }
+      }
+
+      ws['!cols'] = [
+        { wch: 5 },
+        { wch: 22 },
+        { wch: 16 },
+        { wch: 22 },
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 12 },
+        { wch: 25 },
+        { wch: 12 },
+        { wch: 18 },
+        { wch: 10 },
+        { wch: 10 }
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Rekap Tabungan Keluarga');
+      
+      var timestamp = new Date().getTime();
+      var fileName = 'REKAP_TABUNGAN_KELUARGA_' + timestamp + '.xlsx';
+      XLSX.writeFile(wb, fileName);
+      showToast('File Excel (.xlsx) belang per keluarga berhasil diunduh!', 'success');
+    } else {
+      showToast('Library SheetJS belum terhubung', 'error');
+    }
   }
 
   function exportPrintManifest() {
@@ -455,8 +1353,10 @@
         .getExportData();
     } else {
       renderAndTriggerPrint_([
-        { idTransaksi: 'HAL-0001', namaPeserta: 'Budi Santoso', noWhatsapp: '081234567890', noRumah: 'No. 12', sponsorNama: '-', hubungan: 'Kepala Keluarga', idBus: 'Bus 1', noKursi: '1A', statusPembayaran: 'Lunas' },
-        { idTransaksi: 'HAL-0002', namaPeserta: 'Siti Aminah', noWhatsapp: '081234567890', noRumah: 'No. 12', sponsorNama: 'Budi Santoso', hubungan: 'Istri', idBus: 'Bus 1', noKursi: '1B', statusPembayaran: 'Lunas' }
+        { idTransaksi: 'HAL-0001', namaPeserta: 'Budi Santoso', noWhatsapp: '081234567890', noRumah: 'No. 12', keluarga: 'Budi Santoso', statusKeluarga: 'Kepala Keluarga', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '01', familyCount: 3, isHead: true },
+        { idTransaksi: 'HAL-0002', namaPeserta: 'Siti Aminah', noWhatsapp: '081234567890', noRumah: 'No. 12', keluarga: 'Budi Santoso', statusKeluarga: 'Istri', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '02', familyCount: 3, isHead: false },
+        { idTransaksi: 'HAL-0003', namaPeserta: 'Rizky Pratama', noWhatsapp: '081234567890', noRumah: 'No. 12', keluarga: 'Budi Santoso', statusKeluarga: 'Anak 1', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '03', familyCount: 3, isHead: false },
+        { idTransaksi: 'HAL-0004', namaPeserta: 'Dewi Lestari', noWhatsapp: '081876543210', noRumah: 'No. 05', keluarga: 'Dewi Lestari', statusKeluarga: 'Kepala Keluarga', jumlahTabungan: 200000, idBus: 'Bus 1', noKursi: '04', familyCount: 1, isHead: true }
       ], new Date().toLocaleString('id-ID'));
     }
   }
@@ -464,24 +1364,78 @@
   function renderAndTriggerPrint_(rows, timestamp) {
     document.getElementById('print-timestamp').textContent = 'Dicetak pada: ' + (timestamp || new Date().toLocaleString('id-ID'));
     var tbody = document.getElementById('print-table-body');
+    var tfoot = document.getElementById('print-table-foot');
     var html = '';
 
-    for (var i = 0; i < rows.length; i++) {
-      var r = rows[i];
-      html += '<tr class="text-center">';
-      html += '  <td class="border border-gray-400 p-1.5">' + (i + 1) + '</td>';
-      html += '  <td class="border border-gray-400 p-1.5 font-mono">' + escapeHtml(r.idTransaksi) + '</td>';
-      html += '  <td class="border border-gray-400 p-1.5 font-bold text-left">' + escapeHtml(r.namaPeserta) + '</td>';
-      html += '  <td class="border border-gray-400 p-1.5">' + escapeHtml(r.noWhatsapp || '-') + '</td>';
-      html += '  <td class="border border-gray-400 p-1.5">' + escapeHtml(r.noRumah) + '</td>';
-      html += '  <td class="border border-gray-400 p-1.5">' + escapeHtml(r.sponsorNama !== '-' ? r.sponsorNama + ' (' + r.hubungan + ')' : 'Kepala Keluarga') + '</td>';
-      html += '  <td class="border border-gray-400 p-1.5 font-bold">' + escapeHtml(r.idBus) + '</td>';
-      html += '  <td class="border border-gray-400 p-1.5 font-bold text-indigo-600">' + escapeHtml(r.noKursi) + '</td>';
-      html += '  <td class="border border-gray-400 p-1.5">' + escapeHtml(r.statusPembayaran) + '</td>';
-      html += '</tr>';
+    var i = 0;
+    var familyGroupIndex = 0;
+    var globalIndex = 1;
+    var grandTotalTabungan = 0;
+
+    while (i < rows.length) {
+      var head = rows[i];
+      var famCount = head.familyCount || 1;
+      var isEvenGroup = (familyGroupIndex % 2 === 0);
+      var bgClass = isEvenGroup ? 'bg-gray-100' : 'bg-white';
+
+      var totalFamilyTab = 0;
+      for (var fCount = 0; fCount < famCount && (i + fCount) < rows.length; fCount++) {
+        totalFamilyTab += parseInt(rows[i + fCount].jumlahTabungan || 0, 10);
+      }
+      grandTotalTabungan += totalFamilyTab;
+
+      for (var f = 0; f < famCount && (i + f) < rows.length; f++) {
+        var curr = rows[i + f];
+        var isFirstRowInFamily = (f === 0);
+        var isLastRowInFamily = (f === famCount - 1);
+
+        var borderBottomStyle = isLastRowInFamily ? 'border-b-2 border-black' : 'border-b border-gray-400';
+        var formattedSeatNo = ('0' + (curr.noKursi || '-')).slice(-2);
+
+        html += '<tr class="' + bgClass + ' text-center">';
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5">' + globalIndex + '</td>';
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5 font-mono text-[11px]">' + escapeHtml(curr.idTransaksi) + '</td>';
+        
+        var displayName = escapeHtml(curr.namaPeserta);
+        if (!curr.isHead && curr.statusKeluarga) {
+          displayName += ' <span class="text-gray-500 font-normal">(' + escapeHtml(curr.statusKeluarga) + ')</span>';
+        }
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5 font-bold text-left">' + displayName + '</td>';
+
+        if (isFirstRowInFamily) {
+          var rowspanAttr = famCount > 1 ? ' rowspan="' + famCount + '"' : '';
+          var mergedBorderClass = 'border-x border-t border-gray-400 border-b-2 border-black';
+
+          html += '  <td' + rowspanAttr + ' class="' + mergedBorderClass + ' p-1.5 align-middle">' + escapeHtml(head.noWhatsapp || '-') + '</td>';
+          html += '  <td' + rowspanAttr + ' class="' + mergedBorderClass + ' p-1.5 align-middle">' + escapeHtml(head.noRumah || '-') + '</td>';
+          html += '  <td' + rowspanAttr + ' class="' + mergedBorderClass + ' p-1.5 align-middle font-bold">' + escapeHtml(head.keluarga || head.namaPeserta) + '</td>';
+          html += '  <td' + rowspanAttr + ' class="' + mergedBorderClass + ' p-1.5 align-middle font-bold text-emerald-700">Rp ' + totalFamilyTab.toLocaleString('id-ID') + '</td>';
+        }
+
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5 font-bold">' + escapeHtml(curr.idBus || '-') + '</td>';
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5 font-bold text-indigo-600">' + formattedSeatNo + '</td>';
+        html += '</tr>';
+        globalIndex++;
+      }
+
+      familyGroupIndex++;
+      i += famCount;
     }
 
     tbody.innerHTML = html;
+
+    var totalPeserta = rows.length;
+    var footHtml = '';
+    footHtml += '<tr class="bg-gray-200 font-bold text-center border-t-2 border-black text-xs">';
+    footHtml += '  <td colspan="3" class="border border-black p-2 text-left uppercase tracking-wider">TOTAL MANIFEST BUS MEDIUM:</td>';
+    footHtml += '  <td colspan="3" class="border border-black p-2 text-center">' + totalPeserta + ' Peserta Terdaftar</td>';
+    footHtml += '  <td class="border border-black p-2 text-center text-emerald-800 font-extrabold">Rp ' + grandTotalTabungan.toLocaleString('id-ID') + '</td>';
+    footHtml += '  <td colspan="2" class="border border-black p-2 text-center text-gray-600">-</td>';
+    footHtml += '</tr>';
+
+    if (tfoot) {
+      tfoot.innerHTML = footHtml;
+    }
 
     var printArea = document.getElementById('print-manifest-area');
     printArea.classList.remove('hidden');
@@ -496,56 +1450,58 @@
     var currentBus = appState.currentBusId || 'Bus 1';
     var seats = (appState.seats || []).filter(function(x) { return x.idBus === currentBus; });
 
-    document.getElementById('print-bus-title').textContent = 'DENAH KURSI PENUMPANG - ' + currentBus.toUpperCase();
+    document.getElementById('print-bus-title').textContent = 'DENAH KURSI PENUMPANG BUS MEDIUM - ' + currentBus.toUpperCase();
     document.getElementById('print-bus-timestamp').textContent = 'Dicetak pada: ' + new Date().toLocaleString('id-ID');
 
     var container = document.getElementById('print-bus-grid');
     var rowsMap = {};
+    var occupiedCount = 0;
     for (var s = 0; s < seats.length; s++) {
       var item = seats[s];
+      if (item.namaTerisi && item.namaTerisi.trim() !== '') occupiedCount++;
       if (!rowsMap[item.baris]) rowsMap[item.baris] = [];
       rowsMap[item.baris].push(item);
     }
 
     var html = '';
-    
-    html += '<div class="flex justify-between items-center border-2 border-black p-2.5 mb-4 bg-gray-100 font-bold text-xs uppercase tracking-wider">';
-    html += '  <div>PINTU DEPAN (KIRI)</div>';
-    html += '  <div>SOPIR BUS (KANAN)</div>';
+
+    html += '<div class="flex justify-between items-center border-2 border-black p-3 mb-5 bg-gray-100 font-bold text-sm uppercase tracking-wider rounded-xl">';
+    html += '  <div class="flex items-center gap-2"><span class="px-2.5 py-1 bg-black text-white rounded text-xs">KN</span> PINTU / KERNET</div>';
+    html += '  <div class="text-center font-extrabold text-xs text-gray-800">STATUS: TERISI ' + occupiedCount + ' / 33 KURSI</div>';
+    html += '  <div class="flex items-center gap-2">SOPIR BUS <span class="px-2.5 py-1 bg-black text-white rounded text-xs">SP</span></div>';
     html += '</div>';
 
-    html += '<div class="space-y-2">';
-    for (var r = 1; r <= 10; r++) {
+    html += '<div class="space-y-3.5">';
+    for (var r = 1; r <= 7; r++) {
       var currentSeats = rowsMap[r] || [];
-      var seatA = currentSeats.find(function(x) { return x.noKursi.indexOf('A') !== -1; }) || { noKursi: r + 'A' };
-      var seatB = currentSeats.find(function(x) { return x.noKursi.indexOf('B') !== -1; }) || { noKursi: r + 'B' };
-      var seatC = currentSeats.find(function(x) { return x.noKursi.indexOf('C') !== -1; }) || { noKursi: r + 'C' };
-      var seatD = currentSeats.find(function(x) { return x.noKursi.indexOf('D') !== -1; }) || { noKursi: r + 'D' };
-      var seatE = currentSeats.find(function(x) { return x.noKursi.indexOf('E') !== -1; }) || { noKursi: r + 'E' };
+      var seat1 = currentSeats[0] || { noKursi: ('0' + ((r-1)*4+1)).slice(-2) };
+      var seat2 = currentSeats[1] || { noKursi: ('0' + ((r-1)*4+2)).slice(-2) };
+      var seat3 = currentSeats[2] || { noKursi: ('0' + ((r-1)*4+3)).slice(-2) };
+      var seat4 = currentSeats[3] || { noKursi: ('0' + ((r-1)*4+4)).slice(-2) };
 
-      html += '<div class="flex items-center gap-2 text-center text-xs">';
-      html += '  <div class="grid grid-cols-2 gap-1.5 w-5/12">';
-      html += renderPrintSeatBox(seatA);
-      html += renderPrintSeatBox(seatB);
+      html += '<div class="flex items-center gap-3 text-center text-xs">';
+      html += '  <div class="grid grid-cols-2 gap-2.5 w-5/12">';
+      html += renderPrintSeatBox(seat1);
+      html += renderPrintSeatBox(seat2);
       html += '  </div>';
-      html += '  <div class="w-2/12 font-bold text-gray-400 text-[10px]">LORONG</div>';
-      html += '  <div class="grid grid-cols-3 gap-1.5 w-5/12">';
-      html += renderPrintSeatBox(seatC);
-      html += renderPrintSeatBox(seatD);
-      html += renderPrintSeatBox(seatE);
+      html += '  <div class="w-2/12 font-extrabold text-gray-800 text-xs uppercase tracking-wider">BARIS ' + r + '</div>';
+      html += '  <div class="grid grid-cols-2 gap-2.5 w-5/12">';
+      html += renderPrintSeatBox(seat3);
+      html += renderPrintSeatBox(seat4);
       html += '  </div>';
       html += '</div>';
     }
-    html += '</div>';
 
-    var row11Seats = rowsMap[11] || [];
-    html += '<div class="mt-4 pt-2 border-t-2 border-black">';
-    html += '  <p class="text-[10px] font-bold uppercase text-center mb-1.5">Baris 11 (Belakang Penuh)</p>';
-    html += '  <div class="grid grid-cols-4 gap-1.5 text-center text-xs">';
-    for (var b = 0; b < row11Seats.length; b++) {
-      html += renderPrintSeatBox(row11Seats[b]);
+    var row8Seats = rowsMap[8] || [];
+    html += '<div class="mt-6 pt-4 border-t-2 border-black">';
+    html += '  <p class="text-xs font-black uppercase text-center mb-2.5 tracking-wider">BARIS 8 (BELAKANG PENUH • 5 KURSI)</p>';
+    html += '  <div class="grid grid-cols-5 gap-2.5 text-center text-xs">';
+    for (var b = 0; b < row8Seats.length; b++) {
+      html += renderPrintSeatBox(row8Seats[b]);
     }
     html += '  </div>';
+    html += '</div>';
+
     html += '</div>';
 
     container.innerHTML = html;
@@ -562,11 +1518,12 @@
   function renderPrintSeatBox(seat) {
     var isOccupied = (seat.namaTerisi && seat.namaTerisi.trim() !== '');
     var name = isOccupied ? escapeHtml(seat.namaTerisi) : 'KOSONG';
-    var bg = isOccupied ? 'bg-gray-200 font-bold' : 'bg-white text-gray-400';
+    var bg = isOccupied ? 'bg-gray-100 font-bold' : 'bg-white text-gray-400';
+    var formattedSeatNo = ('0' + seat.noKursi).slice(-2);
 
-    return '<div class="border-2 border-black p-1.5 rounded-lg min-h-[44px] flex flex-col justify-center ' + bg + '">' +
-           '  <div class="font-extrabold text-[11px] underline">' + seat.noKursi + '</div>' +
-           '  <div class="text-[10px] truncate leading-tight mt-0.5">' + name + '</div>' +
+    return '<div class="border-2 border-black p-2.5 rounded-xl min-h-[68px] flex flex-col justify-between ' + bg + '">' +
+           '  <div class="font-black text-sm underline tracking-wider text-black">' + formattedSeatNo + '</div>' +
+           '  <div class="text-xs break-words line-clamp-2 leading-tight mt-1 font-bold">' + name + '</div>' +
            '</div>';
   }
 
@@ -575,6 +1532,7 @@
     document.getElementById('fam-sponsor-name').value = sponsorNama;
     document.getElementById('fam-member-name').value = '';
     document.getElementById('fam-pin-akses').value = '';
+    document.getElementById('fam-setoran-awal').value = '';
     openModal('modal-family');
   }
 
@@ -587,7 +1545,8 @@
       sponsorNama: document.getElementById('fam-sponsor-name').value,
       pinAkses: document.getElementById('fam-pin-akses').value,
       namaAnggota: document.getElementById('fam-member-name').value,
-      hubungan: document.getElementById('fam-relation').value
+      hubungan: document.getElementById('fam-relation').value,
+      setoranAwal: document.getElementById('fam-setoran-awal').value || 0
     };
 
     if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -650,43 +1609,6 @@
     }
   }
 
-  function onAdminLoginSuccess() {
-    document.getElementById('btn-open-login').classList.add('hidden');
-    document.getElementById('admin-badge').classList.remove('hidden');
-    document.getElementById('admin-role-text').textContent = appState.adminRole;
-    document.getElementById('admin-swap-indicator').classList.remove('hidden');
-    document.getElementById('btn-admin-print-bus').classList.remove('hidden');
-    renderAll();
-  }
-
-  function logoutAdmin() {
-    appState.adminRole = null;
-    appState.selectedSeatForSwap = null;
-    document.getElementById('btn-open-login').classList.remove('hidden');
-    document.getElementById('admin-badge').classList.add('hidden');
-    document.getElementById('admin-swap-indicator').classList.add('hidden');
-    document.getElementById('btn-admin-print-bus').classList.add('hidden');
-    showToast('Anda telah keluar dari mode Admin', 'info');
-    renderAll();
-  }
-
-  function changePaymentStatus(idTransaksi, newStatus) {
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (res && res.success) {
-            showToast('Status diperbarui menjadi ' + newStatus, 'success');
-            loadDataFromBackend();
-          } else {
-            showToast(res ? res.message : 'Gagal mengubah status', 'error');
-          }
-        })
-        .updatePaymentStatus(idTransaksi, newStatus, appState.adminRole);
-    } else {
-      showToast('Preview: Status diperbarui ke ' + newStatus, 'success');
-    }
-  }
-
   function deleteParticipantProcess(idTransaksi) {
     showToast('Menghapus data peserta...', 'info');
     if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -705,25 +1627,29 @@
     }
   }
 
-  function switchTab(tabId) {
-    var tabs = ['tab-form', 'tab-list', 'tab-bus'];
-    for (var i = 0; i < tabs.length; i++) {
-      var el = document.getElementById(tabs[i]);
-      var btn = document.getElementById('nav-' + tabs[i]);
-      if (tabs[i] === tabId) {
-        el.classList.remove('hidden');
-        btn.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition bg-[#EA6A9C] text-white shadow-sm';
+  var searchTimer = null;
+  function handleSearchInput() {
+    var val = document.getElementById('search-input').value;
+    var btnClear = document.getElementById('btn-clear-search');
+    if (btnClear) {
+      if (val && val.trim().length > 0) {
+        btnClear.classList.remove('hidden');
       } else {
-        el.classList.add('hidden');
-        btn.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold text-[#7E859E] hover:text-[#1E2238] transition';
+        btnClear.classList.add('hidden');
       }
     }
-    if (tabId === 'tab-bus') {
-      renderBusSeats();
-    }
+    debounceSearch();
   }
 
-  var searchTimer = null;
+  function clearSearchInput() {
+    var input = document.getElementById('search-input');
+    var btnClear = document.getElementById('btn-clear-search');
+    if (input) input.value = '';
+    if (btnClear) btnClear.classList.add('hidden');
+    appState.searchQuery = '';
+    loadDataFromBackend();
+  }
+
   function debounceSearch() {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(function() {
@@ -737,7 +1663,7 @@
     var btns = document.querySelectorAll('.filter-btn');
     for (var i = 0; i < btns.length; i++) {
       if (btns[i].getAttribute('data-status') === status) {
-        btns[i].className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-[#1E2238] text-white';
+        btns[i].className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-[#1E2238] text-[#FFFFFF]';
       } else {
         btns[i].className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200';
       }
@@ -748,8 +1674,15 @@
   function openModal(id) {
     document.getElementById(id).classList.remove('hidden');
   }
+
   function closeModal(id) {
     document.getElementById(id).classList.add('hidden');
+  }
+
+  function closeModalOnBackdrop(event, modalId) {
+    if (event.target.id === modalId) {
+      closeModal(modalId);
+    }
   }
 
   function showToast(message, type) {
