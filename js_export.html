@@ -1,1 +1,487 @@
+<script>
+  function triggerBackupDatabase() {
+    showToast('Membuat backup database cadangan...', 'info');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success && res.backupJson) {
+            downloadBackupJsonFile_(res.backupJson, res.timestamp);
+          } else {
+            showToast(res ? res.message : 'Gagal membuat backup', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showToast('Error backup: ' + err.message, 'error');
+        })
+        .backupDatabase();
+    } else {
+      var sampleBackup = {
+        appName: 'Web App Halal Bihalal RT',
+        backupTime: new Date().toLocaleString('id-ID'),
+        data: { Peserta: appState.peserta }
+      };
+      downloadBackupJsonFile_(JSON.stringify(sampleBackup), 'Preview');
+    }
+  }
 
+  function triggerClearAllDatabase() {
+    if (appState.adminRole !== 'Super Admin') {
+      showToast('Akses ditolak. Fitur ini khusus Super Admin!', 'error');
+      return;
+    }
+
+    if (!confirm('⚠️ PERINGATAN KONTROL SUPER ADMIN:\n\nApakah Anda YAKIN ingin MENGHAPUS SELURUH DATABASE PESERTA, TABUNGAN, & ALOKASI KURSI BUS?\n\nSeluruh data pendaftar uji coba akan dikosongkan untuk persiapan LAUNCHING. Tindakan ini tidak dapat dibatalkan!')) {
+      return;
+    }
+
+    if (!confirm('🚨 KONFIRMASI TERAKHIR:\n\nSemua data peserta uji coba akan terhapus bersih. Klik OK untuk melanjutkan pengosongan database sekarang.')) {
+      return;
+    }
+
+    showToast('Mengosongkan seluruh database...', 'info');
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal mengosongkan database', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showToast('Error: ' + err.message, 'error');
+        })
+        .clearAllDatabase(appState.adminRole);
+    } else {
+      appState.peserta = [];
+      appState.seats.forEach(function(s) { s.idPeserta = ''; s.namaTerisi = ''; });
+      appState.stats = { totalWarga: 0, totalKepalaKeluarga: 0, totalTabungan: 0, kursiTerisiBus1: 0, kursiTerisiBus2: 0 };
+      renderAll();
+      showToast('Preview Mode: Seluruh database berhasil dikosongkan!', 'success');
+    }
+  }
+
+  function downloadBackupJsonFile_(jsonString, timestamp) {
+    var blob = new Blob([jsonString], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'BACKUP_HALAL_BIHALAL_RT_' + new Date().getTime() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('File backup JSON berhasil diunduh ke komputer/HP Anda!', 'success');
+  }
+
+  function handleRestoreFileSelect(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('input-restore-json').value = e.target.result;
+      showToast('File backup JSON berhasil dimuat ke form restore.', 'info');
+    };
+    reader.readAsText(file);
+  }
+
+  function triggerRestoreDatabase() {
+    var jsonVal = document.getElementById('input-restore-json').value;
+    if (!jsonVal || jsonVal.trim() === '') {
+      showToast('Pilih file backup atau tempelkan data JSON restore!', 'error');
+      return;
+    }
+
+    if (!confirm('Apakah Anda yakin ingin memulihkan seluruh database? Data saat ini akan diperbarui dari backup.')) {
+      return;
+    }
+
+    var btn = document.getElementById('btn-submit-restore');
+    btn.disabled = true;
+    btn.textContent = 'Memulihkan...';
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = 'Pulihkan Sekarang';
+          if (res && res.success) {
+            closeModal('modal-restore');
+            document.getElementById('input-restore-json').value = '';
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal restore database', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = 'Pulihkan Sekarang';
+          showToast('Error restore: ' + err.message, 'error');
+        })
+        .restoreDatabase(jsonVal);
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Pulihkan Sekarang';
+      closeModal('modal-restore');
+      showToast('Preview: Restore database berhasil dipulihkan!', 'success');
+    }
+  }
+
+  function exportDataExcel() {
+    showToast('Menyiapkan file Excel belang keluarga...', 'info');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success && res.exportRows) {
+            generateExcelDownload_(res.exportRows);
+          } else {
+            showToast('Gagal mengambil data ekspor', 'error');
+          }
+        })
+        .getExportData();
+    } else {
+      generateExcelDownload_([
+        { idTransaksi: 'HAL-0001', tanggal: '12/09/2026', keluarga: 'Budi Santoso', noWhatsapp: '081234567890', namaPeserta: 'Budi Santoso', statusKeluarga: 'Kepala Keluarga', noRumah: 'No. 12', catatanLokasi: 'Dekat pos satpam', metodePembayaran: 'Tunai', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '01', familyCount: 3, isHead: true },
+        { idTransaksi: 'HAL-0002', tanggal: '12/09/2026', keluarga: 'Budi Santoso', noWhatsapp: '081234567890', namaPeserta: 'Siti Aminah', statusKeluarga: 'Istri', noRumah: 'No. 12', catatanLokasi: 'Dekat pos satpam', metodePembayaran: 'Tunai', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '02', familyCount: 3, isHead: false },
+        { idTransaksi: 'HAL-0003', tanggal: '12/09/2026', keluarga: 'Budi Santoso', noWhatsapp: '081234567890', namaPeserta: 'Rizky Pratama', statusKeluarga: 'Anak 1', noRumah: 'No. 12', catatanLokasi: 'Dekat pos satpam', metodePembayaran: 'Tunai', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '03', familyCount: 3, isHead: false },
+        { idTransaksi: 'HAL-0004', tanggal: '12/09/2026', keluarga: 'Dewi Lestari', noWhatsapp: '081876543210', namaPeserta: 'Dewi Lestari', statusKeluarga: 'Kepala Keluarga', noRumah: 'No. 5', catatanLokasi: 'Depan pohon mangga', metodePembayaran: 'Tunai', jumlahTabungan: 200000, idBus: 'Bus 1', noKursi: '04', familyCount: 1, isHead: true }
+      ]);
+    }
+  }
+
+  function generateExcelDownload_(rows) {
+    if (!rows || rows.length === 0) {
+      showToast('Data ekspor kosong', 'error');
+      return;
+    }
+
+    var headers = [
+      'No', 
+      'Keluarga', 
+      'No. WhatsApp', 
+      'Nama Peserta', 
+      'Status Keluarga', 
+      'ID Transaksi', 
+      'Tanggal', 
+      'No. Rumah', 
+      'Catatan Lokasi', 
+      'Pembayaran', 
+      'Total Tabungan (Rp)', 
+      'Bus', 
+      'Kursi'
+    ];
+
+    var aoa = [headers];
+    var merges = [];
+    var rowStyles = [null];
+
+    var familyGroupIndex = 0;
+    var i = 0;
+
+    while (i < rows.length) {
+      var r = rows[i];
+      var famCount = r.familyCount || 1;
+      var startRow = aoa.length;
+
+      var bgRgb = (familyGroupIndex % 2 === 0) ? 'F2F4F8' : 'FFFFFF';
+
+      for (var f = 0; f < famCount && (i + f) < rows.length; f++) {
+        var curr = rows[i + f];
+        var tabVal = parseInt(curr.jumlahTabungan || 0, 10);
+        var formattedTab = 'Rp ' + tabVal.toLocaleString('id-ID');
+        var formattedSeatNo = ('0' + curr.noKursi).slice(-2);
+
+        aoa.push([
+          (i + f + 1),
+          curr.keluarga || curr.namaPeserta,
+          curr.noWhatsapp || '-',
+          curr.namaPeserta,
+          curr.statusKeluarga || 'Kepala Keluarga',
+          curr.idTransaksi || '-',
+          curr.tanggal || '-',
+          curr.noRumah || '-',
+          curr.catatanLokasi || '-',
+          curr.metodePembayaran || 'Tunai',
+          formattedTab,
+          curr.idBus || '-',
+          formattedSeatNo || '-'
+        ]);
+
+        rowStyles.push(bgRgb);
+      }
+
+      if (famCount > 1) {
+        var endRow = startRow + famCount - 1;
+        merges.push({ s: { r: startRow, c: 1 }, e: { r: endRow, c: 1 } });
+        merges.push({ s: { r: startRow, c: 2 }, e: { r: endRow, c: 2 } });
+      }
+
+      familyGroupIndex++;
+      i += famCount;
+    }
+
+    if (typeof XLSX !== 'undefined') {
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+
+      if (merges.length > 0) {
+        ws['!merges'] = merges;
+      }
+
+      var range = XLSX.utils.decode_range(ws['!ref']);
+      for (var R = range.s.r; R <= range.e.r; ++R) {
+        var isHeader = (R === 0);
+        var rowBg = rowStyles[R] || 'FFFFFF';
+
+        for (var C = range.s.c; C <= range.e.c; ++C) {
+          var cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+          if (!ws[cellRef]) continue;
+
+          if (isHeader) {
+            ws[cellRef].s = {
+              fill: { fgColor: { rgb: 'EA6A9C' } },
+              font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10 },
+              alignment: { horizontal: 'center', vertical: 'center' },
+              border: {
+                top: { style: 'thin', color: { rgb: 'CCCCCC' } },
+                bottom: { style: 'medium', color: { rgb: 'EA6A9C' } },
+                left: { style: 'thin', color: { rgb: 'CCCCCC' } },
+                right: { style: 'thin', color: { rgb: 'CCCCCC' } }
+              }
+            };
+          } else {
+            ws[cellRef].s = {
+              fill: { fgColor: { rgb: rowBg } },
+              font: { sz: 9.5 },
+              alignment: { 
+                vertical: 'center', 
+                horizontal: (C === 0 || C === 5 || C === 6 || C === 11 || C === 12) ? 'center' : (C === 10 ? 'right' : 'left')
+              },
+              border: {
+                top: { style: 'thin', color: { rgb: 'E2E8F0' } },
+                bottom: { style: 'thin', color: { rgb: 'E2E8F0' } },
+                left: { style: 'thin', color: { rgb: 'E2E8F0' } },
+                right: { style: 'thin', color: { rgb: 'E2E8F0' } }
+              }
+            };
+          }
+        }
+      }
+
+      ws['!cols'] = [
+        { wch: 5 },
+        { wch: 22 },
+        { wch: 16 },
+        { wch: 22 },
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 12 },
+        { wch: 25 },
+        { wch: 12 },
+        { wch: 18 },
+        { wch: 10 },
+        { wch: 10 }
+      ];
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Rekap Tabungan Keluarga');
+      
+      var timestamp = new Date().getTime();
+      var fileName = 'REKAP_TABUNGAN_KELUARGA_' + timestamp + '.xlsx';
+      XLSX.writeFile(wb, fileName);
+      showToast('File Excel (.xlsx) belang per keluarga berhasil diunduh!', 'success');
+    } else {
+      showToast('Library SheetJS belum terhubung', 'error');
+    }
+  }
+
+  function exportPrintManifest() {
+    showToast('Menyiapkan dokumen PDF...', 'info');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success && res.exportRows) {
+            renderAndTriggerPrint_(res.exportRows, res.timestamp);
+          }
+        })
+        .getExportData();
+    } else {
+      renderAndTriggerPrint_([
+        { idTransaksi: 'HAL-0001', namaPeserta: 'Budi Santoso', noWhatsapp: '081234567890', noRumah: 'No. 12', keluarga: 'Budi Santoso', statusKeluarga: 'Kepala Keluarga', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '01', familyCount: 3, isHead: true },
+        { idTransaksi: 'HAL-0002', namaPeserta: 'Siti Aminah', noWhatsapp: '081234567890', noRumah: 'No. 12', keluarga: 'Budi Santoso', statusKeluarga: 'Istri', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '02', familyCount: 3, isHead: false },
+        { idTransaksi: 'HAL-0003', namaPeserta: 'Rizky Pratama', noWhatsapp: '081234567890', noRumah: 'No. 12', keluarga: 'Budi Santoso', statusKeluarga: 'Anak 1', jumlahTabungan: 500000, idBus: 'Bus 1', noKursi: '03', familyCount: 3, isHead: false },
+        { idTransaksi: 'HAL-0004', namaPeserta: 'Dewi Lestari', noWhatsapp: '081876543210', noRumah: 'No. 05', keluarga: 'Dewi Lestari', statusKeluarga: 'Kepala Keluarga', jumlahTabungan: 200000, idBus: 'Bus 1', noKursi: '04', familyCount: 1, isHead: true }
+      ], new Date().toLocaleString('id-ID'));
+    }
+  }
+
+  function renderAndTriggerPrint_(rows, timestamp) {
+    document.getElementById('print-timestamp').textContent = 'Dicetak pada: ' + (timestamp || new Date().toLocaleString('id-ID'));
+    var tbody = document.getElementById('print-table-body');
+    var tfoot = document.getElementById('print-table-foot');
+    var html = '';
+
+    var i = 0;
+    var familyGroupIndex = 0;
+    var globalIndex = 1;
+    var grandTotalTabungan = 0;
+
+    while (i < rows.length) {
+      var head = rows[i];
+      var famCount = head.familyCount || 1;
+      var isEvenGroup = (familyGroupIndex % 2 === 0);
+      var bgClass = isEvenGroup ? 'bg-gray-100' : 'bg-white';
+
+      var totalFamilyTab = 0;
+      for (var fCount = 0; fCount < famCount && (i + fCount) < rows.length; fCount++) {
+        totalFamilyTab += parseInt(rows[i + fCount].jumlahTabungan || 0, 10);
+      }
+      grandTotalTabungan += totalFamilyTab;
+
+      for (var f = 0; f < famCount && (i + f) < rows.length; f++) {
+        var curr = rows[i + f];
+        var isFirstRowInFamily = (f === 0);
+        var isLastRowInFamily = (f === famCount - 1);
+
+        var borderBottomStyle = isLastRowInFamily ? 'border-b-2 border-black' : 'border-b border-gray-400';
+        var formattedSeatNo = ('0' + (curr.noKursi || '-')).slice(-2);
+
+        html += '<tr class="' + bgClass + ' text-center">';
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5">' + globalIndex + '</td>';
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5 font-mono text-[11px]">' + escapeHtml(curr.idTransaksi) + '</td>';
+        
+        var displayName = escapeHtml(curr.namaPeserta);
+        if (!curr.isHead && curr.statusKeluarga) {
+          displayName += ' <span class="text-gray-500 font-normal">(' + escapeHtml(curr.statusKeluarga) + ')</span>';
+        }
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5 font-bold text-left">' + displayName + '</td>';
+
+        if (isFirstRowInFamily) {
+          var rowspanAttr = famCount > 1 ? ' rowspan="' + famCount + '"' : '';
+          var mergedBorderClass = 'border-x border-t border-gray-400 border-b-2 border-black';
+
+          html += '  <td' + rowspanAttr + ' class="' + mergedBorderClass + ' p-1.5 align-middle">' + escapeHtml(head.noWhatsapp || '-') + '</td>';
+          html += '  <td' + rowspanAttr + ' class="' + mergedBorderClass + ' p-1.5 align-middle">' + escapeHtml(head.noRumah || '-') + '</td>';
+          html += '  <td' + rowspanAttr + ' class="' + mergedBorderClass + ' p-1.5 align-middle font-bold">' + escapeHtml(head.keluarga || head.namaPeserta) + '</td>';
+          html += '  <td' + rowspanAttr + ' class="' + mergedBorderClass + ' p-1.5 align-middle font-bold text-emerald-700">Rp ' + totalFamilyTab.toLocaleString('id-ID') + '</td>';
+        }
+
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5 font-bold">' + escapeHtml(curr.idBus || '-') + '</td>';
+        html += '  <td class="border-x border-t border-gray-400 ' + borderBottomStyle + ' p-1.5 font-bold text-indigo-600">' + formattedSeatNo + '</td>';
+        html += '</tr>';
+        globalIndex++;
+      }
+
+      familyGroupIndex++;
+      i += famCount;
+    }
+
+    tbody.innerHTML = html;
+
+    var totalPeserta = rows.length;
+    var footHtml = '';
+    footHtml += '<tr class="bg-gray-200 font-bold text-center border-t-2 border-black text-xs">';
+    footHtml += '  <td colspan="3" class="border border-black p-2 text-left uppercase tracking-wider">TOTAL MANIFEST BUS MEDIUM:</td>';
+    footHtml += '  <td colspan="3" class="border border-black p-2 text-center">' + totalPeserta + ' Peserta Terdaftar</td>';
+    footHtml += '  <td class="border border-black p-2 text-center text-emerald-800 font-extrabold">Rp ' + grandTotalTabungan.toLocaleString('id-ID') + '</td>';
+    footHtml += '  <td colspan="2" class="border border-black p-2 text-center text-gray-600">-</td>';
+    footHtml += '</tr>';
+
+    if (tfoot) {
+      tfoot.innerHTML = footHtml;
+    }
+
+    var printArea = document.getElementById('print-manifest-area');
+    printArea.classList.remove('hidden');
+
+    setTimeout(function() {
+      window.print();
+      printArea.classList.add('hidden');
+    }, 150);
+  }
+
+  function printBusSeatLayout() {
+    var currentBus = appState.currentBusId || 'Bus 1';
+    var seats = (appState.seats || []).filter(function(x) { return x.idBus === currentBus; });
+
+    document.getElementById('print-bus-title').textContent = 'DENAH KURSI PENUMPANG BUS MEDIUM - ' + currentBus.toUpperCase();
+    document.getElementById('print-bus-timestamp').textContent = 'Dicetak pada: ' + new Date().toLocaleString('id-ID');
+
+    var container = document.getElementById('print-bus-grid');
+    var rowsMap = {};
+    var occupiedCount = 0;
+    for (var s = 0; s < seats.length; s++) {
+      var item = seats[s];
+      if (item.namaTerisi && item.namaTerisi.trim() !== '') occupiedCount++;
+      if (!rowsMap[item.baris]) rowsMap[item.baris] = [];
+      rowsMap[item.baris].push(item);
+    }
+
+    var html = '';
+
+    html += '<div class="flex justify-between items-center border-2 border-black p-3 mb-5 bg-gray-100 font-bold text-sm uppercase tracking-wider rounded-xl">';
+    html += '  <div class="flex items-center gap-2"><span class="px-2.5 py-1 bg-black text-white rounded text-xs">KN</span> PINTU / KERNET</div>';
+    html += '  <div class="text-center font-extrabold text-xs text-gray-800">STATUS: TERISI ' + occupiedCount + ' / 33 KURSI</div>';
+    html += '  <div class="flex items-center gap-2">SOPIR BUS <span class="px-2.5 py-1 bg-black text-white rounded text-xs">SP</span></div>';
+    html += '</div>';
+
+    html += '<div class="space-y-3.5">';
+    for (var r = 1; r <= 7; r++) {
+      var currentSeats = rowsMap[r] || [];
+      var seat1 = currentSeats[0] || { noKursi: ('0' + ((r-1)*4+1)).slice(-2) };
+      var seat2 = currentSeats[1] || { noKursi: ('0' + ((r-1)*4+2)).slice(-2) };
+      var seat3 = currentSeats[2] || { noKursi: ('0' + ((r-1)*4+3)).slice(-2) };
+      var seat4 = currentSeats[3] || { noKursi: ('0' + ((r-1)*4+4)).slice(-2) };
+
+      html += '<div class="flex items-center gap-3 text-center text-xs">';
+      html += '  <div class="grid grid-cols-2 gap-2.5 w-5/12">';
+      html += renderPrintSeatBox(seat1);
+      html += renderPrintSeatBox(seat2);
+      html += '  </div>';
+      html += '  <div class="w-2/12 font-extrabold text-gray-800 text-xs uppercase tracking-wider">BARIS ' + r + '</div>';
+      html += '  <div class="grid grid-cols-2 gap-2.5 w-5/12">';
+      html += renderPrintSeatBox(seat3);
+      html += renderPrintSeatBox(seat4);
+      html += '  </div>';
+      html += '</div>';
+    }
+
+    var row8Seats = rowsMap[8] || [];
+    html += '<div class="mt-6 pt-4 border-t-2 border-black">';
+    html += '  <p class="text-xs font-black uppercase text-center mb-2.5 tracking-wider">BARIS 8 (BELAKANG PENUH • 5 KURSI)</p>';
+    html += '  <div class="grid grid-cols-5 gap-2.5 text-center text-xs">';
+    for (var b = 0; b < row8Seats.length; b++) {
+      html += renderPrintSeatBox(row8Seats[b]);
+    }
+    html += '  </div>';
+    html += '</div>';
+
+    html += '</div>';
+
+    container.innerHTML = html;
+
+    var busPrintArea = document.getElementById('print-bus-area');
+    busPrintArea.classList.remove('hidden');
+
+    setTimeout(function() {
+      window.print();
+      busPrintArea.classList.add('hidden');
+    }, 150);
+  }
+
+  function renderPrintSeatBox(seat) {
+    var isOccupied = (seat.namaTerisi && seat.namaTerisi.trim() !== '');
+    var name = isOccupied ? escapeHtml(seat.namaTerisi) : 'KOSONG';
+    var bg = isOccupied ? 'bg-gray-100 font-bold' : 'bg-white text-gray-400';
+    var formattedSeatNo = ('0' + seat.noKursi).slice(-2);
+
+    return '<div class="border-2 border-black p-2.5 rounded-xl min-h-[68px] flex flex-col justify-between ' + bg + '">' +
+           '  <div class="font-black text-sm underline tracking-wider text-black">' + formattedSeatNo + '</div>' +
+           '  <div class="text-xs break-words line-clamp-2 leading-tight mt-1 font-bold">' + name + '</div>' +
+           '</div>';
+  }
+</script>
