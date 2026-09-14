@@ -7,16 +7,43 @@
   }
 
   function switchTab(tabId) {
-    var tabs = ['tab-form', 'tab-list', 'tab-bus', 'tab-info'];
+    var tabs = [
+      { 
+        id: 'tab-form', 
+        btnId: 'nav-tab-form', 
+        activeClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-[#EA6A9C] text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-[#EA6A9C] bg-pink-50 hover:bg-pink-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-pink-200/80 shadow-sm' 
+      },
+      { 
+        id: 'tab-list', 
+        btnId: 'nav-tab-list', 
+        activeClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-[#5A56EC] text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-[#5A56EC] bg-indigo-50 hover:bg-indigo-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-indigo-200/80 shadow-sm' 
+      },
+      { 
+        id: 'tab-bus', 
+        btnId: 'nav-tab-bus', 
+        activeClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-[#265768] text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-[#265768] bg-teal-50 hover:bg-teal-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-teal-200/80 shadow-sm' 
+      },
+      { 
+        id: 'tab-info', 
+        btnId: 'nav-tab-info', 
+        activeClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-amber-500 text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-amber-200/80 shadow-sm' 
+      }
+    ];
+
     for (var i = 0; i < tabs.length; i++) {
-      var el = document.getElementById(tabs[i]);
-      var btn = document.getElementById('nav-' + tabs[i]);
-      if (tabs[i] === tabId) {
+      var item = tabs[i];
+      var el = document.getElementById(item.id);
+      var btn = document.getElementById(item.btnId);
+      if (item.id === tabId) {
         if (el) el.classList.remove('hidden');
-        if (btn) btn.className = 'flex-1 py-2 px-2.5 rounded-xl text-xs md:text-sm font-bold transition bg-[#EA6A9C] text-white shadow-sm';
+        if (btn) btn.className = item.activeClass;
       } else {
         if (el) el.classList.add('hidden');
-        if (btn) btn.className = 'flex-1 py-2 px-2.5 rounded-xl text-xs md:text-sm font-bold text-[#7E859E] hover:text-[#1E2238] transition';
+        if (btn) btn.className = item.inactiveClass;
       }
     }
     if (tabId === 'tab-bus') {
@@ -358,191 +385,6 @@
     }
 
     container.innerHTML = html;
-  }
-
-  function openRundownModal(id) {
-    var titleEl = document.getElementById('modal-rundown-title');
-    document.getElementById('rd-input-id').value = id || '';
-
-    if (id) {
-      titleEl.textContent = 'Edit Agenda Rundown';
-      var item = (appState.rundownList || []).find(function(x) { return x.id === id; });
-      if (item) {
-        document.getElementById('rd-input-hari').value = item.hari || appState.currentInfoHari;
-        document.getElementById('rd-input-jam').value = item.jam || '';
-        document.getElementById('rd-input-judul').value = item.judul || '';
-        document.getElementById('rd-input-keterangan').value = item.keterangan || '';
-      }
-    } else {
-      titleEl.textContent = 'Tambah Agenda Rundown';
-      document.getElementById('rd-input-hari').value = appState.currentInfoHari || 'Hari 1';
-      document.getElementById('rd-input-jam').value = '';
-      document.getElementById('rd-input-judul').value = '';
-      document.getElementById('rd-input-keterangan').value = '';
-    }
-
-    openModal('modal-rundown-crud');
-  }
-
-  function saveRundownProcess() {
-    var btn = document.getElementById('btn-save-rd');
-    btn.disabled = true;
-
-    var payload = {
-      id: document.getElementById('rd-input-id').value,
-      hari: document.getElementById('rd-input-hari').value,
-      jam: document.getElementById('rd-input-jam').value,
-      judul: document.getElementById('rd-input-judul').value,
-      keterangan: document.getElementById('rd-input-keterangan').value
-    };
-
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(function(res) {
-          btn.disabled = false;
-          if (res && res.success) {
-            closeModal('modal-rundown-crud');
-            showToast(res.message, 'success');
-            loadDataFromBackend();
-          } else {
-            showToast(res ? res.message : 'Gagal menyimpan agenda', 'error');
-          }
-        })
-        .withFailureHandler(function(err) {
-          btn.disabled = false;
-          showToast('Error: ' + err.message, 'error');
-        })
-        .saveRundownItem(payload, appState.adminRole);
-    } else {
-      btn.disabled = false;
-      closeModal('modal-rundown-crud');
-      if (!payload.id) {
-        payload.id = 'RD-00' + (appState.rundownList.length + 1);
-        appState.rundownList.push(payload);
-      } else {
-        for (var i = 0; i < appState.rundownList.length; i++) {
-          if (appState.rundownList[i].id === payload.id) {
-            appState.rundownList[i] = payload;
-            break;
-          }
-        }
-      }
-      showToast('Preview: Agenda ' + payload.judul + ' berhasil disimpan!', 'success');
-      renderInfoTab();
-    }
-  }
-
-  function deleteRundownProcess(id) {
-    if (!confirm('Apakah Anda yakin ingin menghapus agenda ini?')) return;
-
-    showToast('Menghapus agenda...', 'info');
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (res && res.success) {
-            showToast(res.message, 'success');
-            loadDataFromBackend();
-          } else {
-            showToast(res ? res.message : 'Gagal menghapus', 'error');
-          }
-        })
-        .deleteRundownItem(id, appState.adminRole);
-    } else {
-      appState.rundownList = appState.rundownList.filter(function(x) { return x.id !== id; });
-      showToast('Preview: Agenda berhasil dihapus.', 'success');
-      renderInfoTab();
-    }
-  }
-
-  function openKontakModal(id) {
-    var titleEl = document.getElementById('modal-kontak-title');
-    document.getElementById('kt-input-id').value = id || '';
-
-    if (id) {
-      titleEl.textContent = 'Edit Kontak Panitia';
-      var item = (appState.kontakList || []).find(function(x) { return x.id === id; });
-      if (item) {
-        document.getElementById('kt-input-jabatan').value = item.jabatan || '';
-        document.getElementById('kt-input-nama').value = item.nama || '';
-        document.getElementById('kt-input-whatsapp').value = item.noWhatsapp || '';
-      }
-    } else {
-      titleEl.textContent = 'Tambah Kontak Panitia';
-      document.getElementById('kt-input-jabatan').value = '';
-      document.getElementById('kt-input-nama').value = '';
-      document.getElementById('kt-input-whatsapp').value = '';
-    }
-
-    openModal('modal-kontak-crud');
-  }
-
-  function saveKontakProcess() {
-    var btn = document.getElementById('btn-save-kt');
-    btn.disabled = true;
-
-    var payload = {
-      id: document.getElementById('kt-input-id').value,
-      jabatan: document.getElementById('kt-input-jabatan').value,
-      nama: document.getElementById('kt-input-nama').value,
-      noWhatsapp: document.getElementById('kt-input-whatsapp').value
-    };
-
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(function(res) {
-          btn.disabled = false;
-          if (res && res.success) {
-            closeModal('modal-kontak-crud');
-            showToast(res.message, 'success');
-            loadDataFromBackend();
-          } else {
-            showToast(res ? res.message : 'Gagal menyimpan kontak', 'error');
-          }
-        })
-        .withFailureHandler(function(err) {
-          btn.disabled = false;
-          showToast('Error: ' + err.message, 'error');
-        })
-        .savePanitiaContact(payload, appState.adminRole);
-    } else {
-      btn.disabled = false;
-      closeModal('modal-kontak-crud');
-      if (!payload.id) {
-        payload.id = 'KT-00' + (appState.kontakList.length + 1);
-        appState.kontakList.push(payload);
-      } else {
-        for (var i = 0; i < appState.kontakList.length; i++) {
-          if (appState.kontakList[i].id === payload.id) {
-            appState.kontakList[i] = payload;
-            break;
-          }
-        }
-      }
-      showToast('Preview: Kontak ' + payload.nama + ' berhasil disimpan!', 'success');
-      renderInfoTab();
-    }
-  }
-
-  function deleteKontakProcess(id) {
-    if (!confirm('Apakah Anda yakin ingin menghapus kontak panitia ini?')) return;
-
-    showToast('Menghapus kontak...', 'info');
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (res && res.success) {
-            showToast(res.message, 'success');
-            loadDataFromBackend();
-          } else {
-            showToast(res ? res.message : 'Gagal menghapus', 'error');
-          }
-        })
-        .deletePanitiaContact(id, appState.adminRole);
-    } else {
-      appState.kontakList = appState.kontakList.filter(function(x) { return x.id !== id; });
-      showToast('Preview: Kontak berhasil dihapus.', 'success');
-      renderInfoTab();
-    }
   }
 
   function openRekapWargaModal() {
