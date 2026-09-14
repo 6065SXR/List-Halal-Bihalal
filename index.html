@@ -3,79 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registrasi Halal Bihalal RT & Denah Multi-Bus</title>
+  <title>Registrasi Halal Bihalal & Seat Bus RT</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS (XLSX) library for Excel export with styling -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Include Component CSS File -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Include CSS Stylesheet Component -->
   <?!= include('css'); ?>
 </head>
-<body class="p-3 md:p-6 pb-28">
-
-  <div class="max-w-4xl mx-auto space-y-6">
-
-    <!-- Top Header Banner -->
-    <header class="hero-gradient rounded-3xl p-6 md:p-8 text-white relative overflow-hidden shadow-lg shadow-pink-500/10">
-      <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
-      <div class="flex items-center justify-between relative z-10">
-        <div>
-          <span class="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold tracking-wide uppercase mb-2">
-            Halal Bihalal Warga RT
-          </span>
-          <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Kamp baru I Jl. Marga Mulya</h1>
-          <p class="text-white/90 text-sm mt-1">Armada Bus Pariwisata (Multi-Bus 1 & 2 • Total 108 Seat)</p>
+<body class="bg-[#F5F6F8] text-[#1E2238] min-h-screen pb-12 font-sans antialiased">
+  <!-- HERO BANNER HEADER -->
+  <header class="hero-gradient text-white pt-8 pb-16 px-4 md:px-8 shadow-xl relative overflow-hidden">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+      <div class="space-y-2 text-center md:text-left">
+        <div class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider text-pink-100 border border-white/20">
+          <span>🕌 Halal Bihalal & Silaturahmi Warga RT</span>
         </div>
+        <h1 class="text-2xl md:text-4xl font-black tracking-tight leading-tight">
+          Sistem Registrasi & Seat Bus Medium
+        </h1>
+        <p class="text-xs md:text-sm text-pink-100 font-medium">
+          Titik Kumpul: <span class="font-extrabold text-white">Kamp baru I Jl. Marga Mulya</span> • Bus 1 & Bus 2 (33 Seat/Bus)
+        </p>
+      </div>
 
-        <div class="text-right">
-          <div id="admin-badge" class="hidden">
-            <span class="bg-white text-[#EA6A9C] font-bold px-3 py-1.5 rounded-full text-xs shadow inline-flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-              <span id="admin-role-text">Admin</span>
-            </span>
-            <button onclick="logoutAdmin()" class="block text-white/80 hover:text-white text-xs underline mt-2">Keluar</button>
-          </div>
-          <button id="btn-open-login" onclick="openModal('modal-login')" class="bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-4 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-            Admin Login
-          </button>
+      <!-- Action Panel Header & Admin Badge -->
+      <div class="flex flex-col sm:flex-row items-center gap-3">
+        <!-- Button Login Admin -->
+        <button id="btn-open-login" onclick="openModal('modal-login')" class="px-4 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur text-white rounded-2xl text-xs font-extrabold transition border border-white/30 shadow-sm flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <span>Login Admin</span>
+        </button>
+
+        <!-- Admin Active Badge -->
+        <div id="admin-badge" class="hidden flex items-center gap-2 bg-white text-[#1E2238] px-3.5 py-2 rounded-2xl text-xs font-black shadow-lg">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="admin-role-text">Admin Mode</span>
+          <button onclick="logoutAdmin()" title="Keluar Mode Admin" class="ml-1 text-rose-500 hover:text-rose-700 font-extrabold text-xs">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Super Admin Panel (Backup & Restore 1-Klik) -->
+    <div id="super-admin-panel" class="hidden max-w-5xl mx-auto mt-4 pt-3 border-t border-white/20 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2 text-amber-200 font-extrabold">
+        <span>⚡ Super Admin Tools:</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="triggerBackupDatabase()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+          <span>💾 Backup Database JSON</span>
+        </button>
+        <button onclick="openModal('modal-restore')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+          <span>🔄 Restore Database JSON</span>
+        </button>
+        <button onclick="triggerClearAllDatabase()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5 border border-rose-400/40">
+          <span>💥 Hapus Semua Database</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-5xl mx-auto px-4 -mt-8 space-y-6 relative z-20">
+    <!-- STATS SUMMARY CARDS -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <!-- Total Warga (Interactive Clickable Card) -->
+      <div onclick="openRekapWargaModal()" class="card-modern p-4 md:p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all group" title="Klik untuk lihat Rekapitulasi Peserta & Keluarga">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400 group-hover:text-[#EA6A9C] transition">Total Warga</span>
+          <span class="w-8 h-8 rounded-xl bg-pink-50 text-[#EA6A9C] flex items-center justify-center font-bold text-xs group-hover:bg-[#EA6A9C] group-hover:text-white transition">👥</span>
+        </div>
+        <div class="mt-2">
+          <p id="stat-total-warga" class="text-xl md:text-2xl font-black text-[#1E2238]">0</p>
+          <p class="text-[10px] text-gray-400 font-medium group-hover:text-gray-600">Klik rincian tabel 🔍</p>
         </div>
       </div>
 
-      <!-- Quick Metrics Ribbon -->
-      <div class="grid grid-cols-4 gap-2 md:gap-3 mt-6 pt-5 border-t border-white/20 text-center">
-        <div>
-          <p class="text-white/80 text-[11px] md:text-xs font-medium">Total Peserta</p>
-          <p id="stat-total-warga" class="text-lg md:text-2xl font-black mt-0.5">0</p>
+      <!-- Bus 1 Seats -->
+      <div class="card-modern p-4 md:p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">Kursi Bus 1</span>
+          <span class="w-8 h-8 rounded-xl bg-indigo-50 text-[#5A56EC] flex items-center justify-center font-bold text-xs">🚌</span>
         </div>
-        <div>
-          <p class="text-white/80 text-[11px] md:text-xs font-medium">Kursi Bus 1</p>
-          <p id="stat-kursi-bus1" class="text-lg md:text-2xl font-black mt-0.5">0 / 54</p>
-        </div>
-        <div>
-          <p class="text-white/80 text-[11px] md:text-xs font-medium">Kursi Bus 2</p>
-          <p id="stat-kursi-bus2" class="text-lg md:text-2xl font-black mt-0.5">0 / 54</p>
-        </div>
-        <div>
-          <p class="text-white/80 text-[11px] md:text-xs font-medium">Lunas</p>
-          <p id="stat-status-lunas" class="text-lg md:text-2xl font-black mt-0.5">0</p>
+        <div class="mt-2">
+          <p id="stat-kursi-bus1" class="text-xl md:text-2xl font-black text-[#5A56EC]">0 / 33</p>
+          <p class="text-[10px] text-gray-400 font-medium">Capacity Medium 1</p>
         </div>
       </div>
-    </header>
 
-    <!-- Navigation Pills -->
-    <nav class="flex items-center justify-center p-1.5 bg-white/70 backdrop-blur rounded-2xl border border-gray-200/70 max-w-md mx-auto shadow-sm">
-      <button id="nav-tab-form" onclick="switchTab('tab-form')" class="flex-1 py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold transition bg-[#EA6A9C] text-white shadow-sm">
+      <!-- Bus 2 Seats -->
+      <div class="card-modern p-4 md:p-5 flex flex-col justify-between">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">Kursi Bus 2</span>
+          <span class="w-8 h-8 rounded-xl bg-teal-50 text-[#265768] flex items-center justify-center font-bold text-xs">🚍</span>
+        </div>
+        <div class="mt-2">
+          <p id="stat-kursi-bus2" class="text-xl md:text-2xl font-black text-[#265768]">0 / 33</p>
+          <p class="text-[10px] text-gray-400 font-medium">Capacity Medium 2</p>
+        </div>
+      </div>
+
+      <!-- Total Tabungan (Interactive Clickable Card) -->
+      <div onclick="openRekapTabunganModal()" class="card-modern p-4 md:p-5 flex flex-col justify-between cursor-pointer hover:scale-[1.02] hover:shadow-lg transition-all group" title="Klik untuk lihat Rincian Tabungan Warga">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400 group-hover:text-emerald-600 transition">Total Tabungan</span>
+          <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xs group-hover:bg-emerald-600 group-hover:text-white transition">💰</span>
+        </div>
+        <div class="mt-2">
+          <p id="stat-total-tabungan" class="text-base md:text-lg font-black text-emerald-600 truncate">Rp 0</p>
+          <p class="text-[10px] text-gray-400 font-medium group-hover:text-gray-600">Klik rincian tabel 🔍</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN NAVIGATION PILLS -->
+    <nav class="flex items-center justify-center p-1.5 bg-white/80 backdrop-blur rounded-2xl border border-gray-200/70 max-w-xl mx-auto shadow-sm">
+      <button id="nav-tab-form" onclick="switchTab('tab-form')" class="flex-1 py-2 px-2.5 rounded-xl text-xs md:text-sm font-bold transition bg-[#EA6A9C] text-white shadow-sm">
         Formulir
       </button>
-      <button id="nav-tab-list" onclick="switchTab('tab-list')" class="flex-1 py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold text-[#7E859E] hover:text-[#1E2238] transition">
+      <button id="nav-tab-list" onclick="switchTab('tab-list')" class="flex-1 py-2 px-2.5 rounded-xl text-xs md:text-sm font-bold text-[#7E859E] hover:text-[#1E2238] transition">
         Daftar Warga
       </button>
-      <button id="nav-tab-bus" onclick="switchTab('tab-bus')" class="flex-1 py-2.5 px-3 rounded-xl text-xs md:text-sm font-bold text-[#7E859E] hover:text-[#1E2238] transition">
+      <button id="nav-tab-bus" onclick="switchTab('tab-bus')" class="flex-1 py-2 px-2.5 rounded-xl text-xs md:text-sm font-bold text-[#7E859E] hover:text-[#1E2238] transition">
         Denah Bus
+      </button>
+      <button id="nav-tab-info" onclick="switchTab('tab-info')" class="flex-1 py-2 px-2.5 rounded-xl text-xs md:text-sm font-bold text-[#7E859E] hover:text-[#1E2238] transition flex items-center justify-center gap-1">
+        <span>📍 Informasi</span>
       </button>
     </nav>
 
@@ -84,7 +141,7 @@
       <div class="card-modern p-6 md:p-8">
         <div class="mb-6">
           <h2 class="text-xl font-extrabold text-[#1E2238]">Pendaftaran Peserta Utama</h2>
-          <p class="text-xs text-[#7E859E] mt-1">Sistem otomatis mengalokasikan kursi kosong mulai dari Bus 1 lalu Bus 2.</p>
+          <p class="text-xs text-[#7E859E] mt-1">Sistem otomatis mengalokasikan kursi kosong mulai dari Bus 1 (33 Seat) lalu Bus 2.</p>
         </div>
 
         <form id="form-register" onsubmit="event.preventDefault(); submitRegistration();" class="space-y-5">
@@ -114,22 +171,17 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-2">Catatan Lokasi / Patokan Rumah</label>
-            <input type="text" id="reg-catatan" required placeholder="Contoh: Dekat pos satpam RT 03 / cat pagar hijau" class="w-full input-modern text-sm text-[#1E2238]">
+            <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-2">Catatan Lokasi / Patokan Rumah <span class="text-gray-400 font-normal lowercase">(opsional)</span></label>
+            <input type="text" id="reg-catatan" placeholder="Contoh: Dekat pos satpam RT 03 / cat pagar hijau" class="w-full input-modern text-sm text-[#1E2238]">
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-2">Metode Pembayaran</label>
-            <div class="p-4 border border-emerald-200 bg-emerald-50/50 rounded-2xl flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">Rp</span>
-                <div>
-                  <p class="text-xs font-extrabold text-[#1E2238]">Tunai (Cash Only)</p>
-                  <p class="text-[11px] text-gray-500">Bayar langsung ke pengurus RT saat pendaftaran</p>
-                </div>
-              </div>
-              <span class="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full uppercase">Aktif</span>
+            <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-2">Setoran Awal Tabungan (Rp)</label>
+            <div class="relative">
+              <span class="absolute left-4 top-3.5 text-sm font-bold text-gray-400">Rp</span>
+              <input type="number" id="reg-setoran-awal" min="0" placeholder="Contoh: 100000 (Boleh 0 jika belum setor)" class="w-full input-modern text-sm text-[#1E2238] pl-11">
             </div>
+            <p class="text-[11px] text-gray-400 mt-1">Sistem pembayaran menggunakan tabungan bertahap/cicilan.</p>
           </div>
 
           <button type="submit" id="btn-submit-reg" class="w-full btn-action bg-[#EA6A9C] hover:bg-[#d95589] text-white font-bold py-4 rounded-2xl shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 text-sm mt-4">
@@ -142,23 +194,26 @@
 
     <!-- ================= TAB 2: DAFTAR PESERTA & EXPORT REKAP ================= -->
     <section id="tab-list" class="hidden space-y-5">
-      <!-- Action Bar & Export Buttons -->
       <div class="card-modern p-4 md:p-6 flex flex-col md:flex-row gap-3 items-center justify-between">
+        <!-- Search Input with Clear Button (X) -->
         <div class="relative w-full md:w-72">
-          <input type="text" id="search-input" oninput="debounceSearch()" placeholder="Cari nama, No. rumah, ID, WA..." class="w-full input-modern text-xs pl-10 pr-4 py-3">
-          <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="search-input" oninput="handleSearchInput()" placeholder="Cari nama, No. rumah, ID, WA..." class="w-full input-modern text-xs pl-10 pr-9 py-3">
+          <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <button id="btn-clear-search" onclick="clearSearchInput()" class="hidden absolute right-3 top-3 text-gray-400 hover:text-gray-600 focus:outline-none p-1 rounded-full transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
         </div>
 
         <div class="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
           <button onclick="setFilterStatus('SEMUA')" class="filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-[#1E2238] text-white" data-status="SEMUA">Semua</button>
-          <button onclick="setFilterStatus('LUNAS')" class="filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200" data-status="LUNAS">Lunas</button>
-          <button onclick="setFilterStatus('MENUNGGU KONFIRMASI')" class="filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200" data-status="MENUNGGU KONFIRMASI">Menunggu</button>
+          <button onclick="setFilterStatus('ADA TABUNGAN')" class="filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200" data-status="ADA TABUNGAN">Ada Tabungan</button>
+          <button onclick="setFilterStatus('BELUM TABUNGAN')" class="filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200" data-status="BELUM TABUNGAN">Belum Tabungan</button>
 
           <div class="h-6 w-px bg-gray-200 mx-1"></div>
           
-          <button onclick="exportDataExcel()" title="Unduh File CSV / Excel" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition flex-shrink-0">
+          <button onclick="exportDataExcel()" title="Unduh File Excel Belang per Keluarga (.xlsx)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition flex-shrink-0">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>Excel / CSV</span>
+            <span>Excel (.xlsx)</span>
           </button>
 
           <button onclick="exportPrintManifest()" title="Cetak Rekap Manifest PDF" class="bg-[#265768] hover:bg-[#1b3e4a] text-white px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition flex-shrink-0">
@@ -168,47 +223,44 @@
         </div>
       </div>
 
-      <!-- Container List Peserta -->
       <div id="participant-list-container" class="space-y-4">
         <div class="text-center py-12 text-gray-400 text-sm">Memuat data peserta...</div>
       </div>
     </section>
 
-    <!-- ================= TAB 3: DENAH MULTI-BUS (BUS 1 & BUS 2) ================= -->
+    <!-- ================= TAB 3: DENAH MEDIUM BUS (33 SEAT / BUS) ================= -->
     <section id="tab-bus" class="hidden space-y-6">
       <div class="card-modern p-6 md:p-8">
-        
         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-gray-100">
           <div>
-            <h2 class="text-xl font-extrabold text-[#1E2238]">Denah Kursi Bus Pariwisata</h2>
-            <p class="text-xs text-[#7E859E] mt-1">Pilih sub-menu bus di bawah untuk berpindah denah armada (54 Seat / Bus).</p>
+            <h2 class="text-xl font-extrabold text-[#1E2238]">Denah Kursi Bus Medium</h2>
+            <p class="text-xs text-[#7E859E] mt-1">Format Bus Medium 2-2 (33 Seat / Bus • Total 66 Seat).</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <div class="flex items-center gap-2 bg-gray-100 p-1.5 rounded-2xl w-full md:w-auto">
               <button id="btn-bus-1" onclick="switchBusView('Bus 1')" class="flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition bg-[#5A56EC] text-white shadow-sm">
-                Bus 1 <span id="badge-bus1-count" class="text-[10px] opacity-80">(0/54)</span>
+                Bus 1 <span id="badge-bus1-count" class="text-[10px] opacity-80">(0/33)</span>
               </button>
               <button id="btn-bus-2" onclick="switchBusView('Bus 2')" class="flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900">
-                Bus 2 <span id="badge-bus2-count" class="text-[10px] opacity-80">(0/54)</span>
+                Bus 2 <span id="badge-bus2-count" class="text-[10px] opacity-80">(0/33)</span>
               </button>
             </div>
 
             <button id="btn-admin-print-bus" onclick="printBusSeatLayout()" class="hidden bg-[#265768] hover:bg-[#1b3e4a] text-white px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-              <span>Cetak Denah Ini (Tempel di Bus)</span>
+              <span>Cetak Denah Ini</span>
             </button>
           </div>
         </div>
 
         <div class="flex items-center justify-between mt-4 mb-2 text-xs font-semibold">
           <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Terisi</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-[#265768]"></span> Terisi</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-gray-200"></span> Kosong</span>
           </div>
 
           <span id="admin-swap-indicator" class="hidden items-center gap-1.5 text-[#EA6A9C] font-bold bg-pink-50 px-2.5 py-1 rounded-lg border border-pink-200">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
             Mode Swap Aktivasi Admin
           </span>
         </div>
@@ -216,38 +268,127 @@
         <div class="bg-[#F8FAFC] p-4 md:p-6 rounded-3xl border border-gray-200/80 max-w-2xl mx-auto">
           <div class="text-center mb-4">
             <span id="current-bus-title-tag" class="inline-block px-4 py-1 bg-[#265768] text-white text-xs font-black rounded-full uppercase tracking-wider">
-              BUS 1
+              BUS 1 (MEDIUM 33 SEAT)
             </span>
           </div>
 
           <div class="flex justify-between items-center bg-white p-3.5 rounded-2xl border border-gray-200 mb-6 shadow-sm">
-            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest px-3 py-1 bg-gray-50 rounded-lg">PINTU DEPAN</span>
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 bg-gray-100 text-[#1E2238] font-black text-[11px] rounded-lg border border-gray-200">KN</span>
+              <span class="text-xs font-bold text-gray-500">Pintu / Kernet</span>
+            </div>
             
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-gray-600">Sopir Bus</span>
-              <span class="p-2 bg-gray-100 rounded-xl">
-                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 004 11m0 0c0 2.473.345 4.866.99 7.132C6.126 19.08 7.37 19.8 8.7 20.3"/></svg>
-              </span>
+              <span class="text-xs font-bold text-gray-500">Sopir Bus</span>
+              <span class="px-2.5 py-1 bg-[#265768] text-white font-black text-[11px] rounded-lg">SP</span>
             </div>
           </div>
 
-          <div id="bus-rows-container" class="space-y-2.5"></div>
+          <div id="bus-rows-container" class="space-y-3"></div>
 
-          <div class="mt-4 pt-3 border-t border-gray-200">
-            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 text-center">Baris 11 (Belakang Penuh)</p>
-            <div id="bus-row-11-container" class="grid grid-cols-4 gap-2"></div>
+          <div class="mt-5 pt-4 border-t border-gray-200">
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 text-center">Baris 8 (Belakang Penuh • 5 Kursi)</p>
+            <div id="bus-row-8-container" class="grid grid-cols-5 gap-1.5 md:gap-2"></div>
           </div>
-
         </div>
       </div>
     </section>
 
-  </div>
+    <!-- ================= TAB 4: INFORMASI ACARA (MULTI-HARI & SUPER ADMIN CRUD) ================= -->
+    <section id="tab-info" class="hidden space-y-6">
+      <div class="card-modern p-6 md:p-8 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <span class="inline-block px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
+              Panduan & Jadwal
+            </span>
+            <h2 class="text-xl md:text-2xl font-extrabold text-[#1E2238]">Informasi Acara Halal Bihalal Warga RT</h2>
+            <p class="text-xs text-gray-500 mt-1">Simak susunan rundown, lokasi keberangkatan, dan kontak panitia di bawah ini.</p>
+          </div>
+
+          <!-- Sub-Menu Hari (Hari 1 / Hari 2) -->
+          <div class="flex items-center gap-2 bg-gray-100 p-1.5 rounded-2xl flex-shrink-0 self-start md:self-auto">
+            <button id="btn-info-hari1" onclick="switchInfoHari('Hari 1')" class="px-4 py-2 rounded-xl text-xs font-extrabold transition bg-[#5A56EC] text-white shadow-sm">
+              🗓️ Hari Ke-1
+            </button>
+            <button id="btn-info-hari2" onclick="switchInfoHari('Hari 2')" class="px-4 py-2 rounded-xl text-xs font-extrabold transition text-gray-600 hover:text-gray-900">
+              🗓️ Hari Ke-2
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 1: Rundown Acara Hari-H -->
+        <div class="bg-gray-50/70 p-4 md:p-6 rounded-3xl border border-gray-100 space-y-4 shadow-sm">
+          <div class="flex items-center justify-between pb-2 border-b border-gray-200/80">
+            <h3 class="text-sm md:text-base font-extrabold text-[#1E2238] uppercase tracking-wider flex items-center gap-2">
+              <span>⏰ RUNDOWN ACARA <span id="info-current-hari-label" class="text-[#5A56EC]">HARI KE-1</span></span>
+            </h3>
+
+            <!-- Super Admin Action: Tambah Agenda -->
+            <button id="btn-admin-add-rundown" onclick="openRundownModal(null)" class="hidden px-3.5 py-1.5 bg-[#5A56EC] hover:bg-[#4844d1] text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              <span>+ Tambah Agenda</span>
+            </button>
+          </div>
+
+          <!-- Dynamic Container for Rundown Cards -->
+          <div id="rundown-items-container" class="space-y-3 text-xs">
+            <div class="text-center py-6 text-gray-400">Memuat agenda acara...</div>
+          </div>
+        </div>
+
+        <!-- Section 2: Titik Keberangkatan & Kontak Panitia (Grid Responsive Layout) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Titik Keberangkatan Bus -->
+          <div class="bg-gray-50/70 p-5 rounded-3xl border border-gray-100 space-y-3 flex flex-col justify-between shadow-sm">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-2xl bg-pink-100 text-[#EA6A9C] flex items-center justify-center font-bold text-sm shadow-sm">📍</span>
+                <h4 class="text-xs font-black text-[#1E2238] uppercase tracking-wider">TITIK KEBERANGKATAN BUS</h4>
+              </div>
+              <div class="pt-1">
+                <p class="text-sm font-extrabold text-gray-800">Kamp baru I Jl. Marga Mulya</p>
+                <p class="text-xs text-gray-500 mt-0.5">Halim Perdanakusuma, Kec. Makasar, Kota Jakarta Timur</p>
+                <p class="text-[11px] text-gray-400 mt-1 italic">*Mohon hadir 30 menit sebelum jam keberangkatan bus.</p>
+              </div>
+            </div>
+
+            <a href="https://maps.google.com/?cid=9634136958467276982" target="_blank" class="w-full py-2.5 bg-[#EA6A9C] hover:bg-[#d95589] text-white rounded-2xl text-xs font-bold transition shadow-sm flex items-center justify-center gap-2 mt-2">
+              <span>Buka Google Maps</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </a>
+          </div>
+
+          <!-- Kontak Darurat Panitia -->
+          <div class="bg-gray-50/70 p-5 rounded-3xl border border-gray-100 space-y-3 flex flex-col justify-between shadow-sm">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="w-9 h-9 rounded-2xl bg-indigo-100 text-[#5A56EC] flex items-center justify-center font-bold text-sm shadow-sm">📞</span>
+                  <h4 class="text-xs font-black text-[#1E2238] uppercase tracking-wider">KONTAK DARURAT PANITIA</h4>
+                </div>
+
+                <!-- Super Admin Action: Tambah Kontak -->
+                <button id="btn-admin-add-kontak" onclick="openKontakModal(null)" class="hidden px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold transition flex items-center gap-1">
+                  <span>+ Kontak</span>
+                </button>
+              </div>
+
+              <!-- Dynamic Container for Panitia Contacts -->
+              <div id="kontak-items-container" class="space-y-2">
+                <div class="text-center py-4 text-xs text-gray-400">Memuat kontak panitia...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <!-- AREA PRINT MANIFEST -->
   <div id="print-manifest-area" class="hidden p-8 bg-white text-black">
     <div class="text-center border-b-2 border-black pb-4 mb-6">
-      <h1 class="text-2xl font-bold uppercase tracking-wider">REKAPITULASI DAFTAR PESERTA & MANIFEST BUS</h1>
+      <h1 class="text-2xl font-bold uppercase tracking-wider">REKAPITULASI DAFTAR PESERTA & MANIFEST BUS MEDIUM</h1>
       <p class="text-sm">Halal Bihalal Warga RT - Kamp baru I Jl. Marga Mulya</p>
       <p id="print-timestamp" class="text-xs text-gray-500 mt-1"></p>
     </div>
@@ -259,34 +400,285 @@
           <th class="border border-gray-400 p-2">Nama Peserta</th>
           <th class="border border-gray-400 p-2">No. WA</th>
           <th class="border border-gray-400 p-2">No. Rumah</th>
-          <th class="border border-gray-400 p-2">Sponsor / Hubungan</th>
+          <th class="border border-gray-400 p-2">Keluarga</th>
+          <th class="border border-gray-400 p-2">Tabungan</th>
           <th class="border border-gray-400 p-2">Armada</th>
           <th class="border border-gray-400 p-2">Kursi</th>
-          <th class="border border-gray-400 p-2">Status</th>
         </tr>
       </thead>
       <tbody id="print-table-body"></tbody>
+      <tfoot id="print-table-foot"></tfoot>
     </table>
   </div>
 
-  <!-- AREA PRINT DENAH BUS HARI-H -->
-  <div id="print-bus-area" class="hidden p-8 bg-white text-black">
-    <div class="text-center border-b-2 border-black pb-4 mb-4">
-      <h1 id="print-bus-title" class="text-2xl font-black uppercase tracking-wider">DENAH KURSI ARMADA BUS 1</h1>
-      <p class="text-sm font-bold">Halal Bihalal Warga RT - Kamp baru I Jl. Marga Mulya</p>
+  <!-- AREA PRINT DENAH BUS MEDIUM -->
+  <div id="print-bus-area" class="hidden p-4 bg-white text-black w-full min-h-screen">
+    <div class="text-center border-b-2 border-black pb-3 mb-4">
+      <h1 id="print-bus-title" class="text-2xl font-black uppercase tracking-wider">DENAH KURSI PENUMPANG BUS MEDIUM - BUS 1</h1>
       <p id="print-bus-timestamp" class="text-xs text-gray-600 mt-1"></p>
     </div>
+    <div id="print-bus-grid" class="w-full max-w-3xl mx-auto"></div>
+  </div>
 
-    <div id="print-bus-grid" class="max-w-2xl mx-auto space-y-2"></div>
+  <!-- MODAL 1: REKAPITULASI TOTAL WARGA & KELUARGA (EXCEL STYLE POPUP) -->
+  <div id="modal-rekap-warga" onclick="closeModalOnBackdrop(event, 'modal-rekap-warga')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-3 md:p-6">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-5 md:p-7 max-w-4xl w-full shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="w-10 h-10 rounded-2xl bg-pink-50 text-[#EA6A9C] flex items-center justify-center font-black text-base shadow-sm">👥</span>
+          <div>
+            <span class="text-[10px] font-bold uppercase text-[#EA6A9C] tracking-wider">Tabel Excel Warga</span>
+            <h3 class="text-base md:text-lg font-extrabold text-[#1E2238]">Rekapitulasi Data Peserta & Keluarga</h3>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-rekap-warga')" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
 
-    <div class="mt-8 text-center text-xs text-gray-500 border-t border-gray-300 pt-3">
-      <p>* Mohon duduk sesuai nomor kursi yang tertera. Selamat menikmati perjalanan Halal Bihalal!</p>
+      <!-- Scrollable Table Container -->
+      <div class="overflow-x-auto flex-1 border border-gray-200 rounded-2xl shadow-inner">
+        <table class="w-full text-xs text-left border-collapse min-w-[640px]">
+          <thead class="bg-[#EA6A9C] text-white font-extrabold sticky top-0 shadow-sm uppercase tracking-wider text-[11px]">
+            <tr>
+              <th class="p-3 text-center w-10 border-r border-pink-400/40">No</th>
+              <th class="p-3 border-r border-pink-400/40">Keluarga (KK)</th>
+              <th class="p-3 border-r border-pink-400/40">Nama Peserta</th>
+              <th class="p-3 border-r border-pink-400/40">Status Keluarga</th>
+              <th class="p-3 text-center border-r border-pink-400/40">No. Rumah</th>
+              <th class="p-3 text-center border-r border-pink-400/40">No. WA</th>
+              <th class="p-3 text-center">Bus & Seat</th>
+            </tr>
+          </thead>
+          <tbody id="rekap-warga-table-body" class="divide-y divide-gray-200">
+            <!-- Dynamic Data Rendered via js.html -->
+          </tbody>
+          <tfoot id="rekap-warga-table-foot" class="bg-gray-100 font-extrabold text-[#1E2238] border-t-2 border-gray-300">
+            <!-- Dynamic Footer Rendered via js.html -->
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between pt-1 flex-shrink-0 text-xs">
+        <p class="text-gray-400 text-[11px] italic">*Warna latar belakang membedakan tiap kelompok keluarga.</p>
+        <button onclick="closeModal('modal-rekap-warga')" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: RINCIAN TOTAL TABUNGAN WARGA (EXCEL STYLE POPUP) -->
+  <div id="modal-rekap-tabungan" onclick="closeModalOnBackdrop(event, 'modal-rekap-tabungan')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-3 md:p-6">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-5 md:p-7 max-w-4xl w-full shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3 flex-shrink-0">
+        <div class="flex items-center gap-2.5">
+          <span class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-base shadow-sm">💰</span>
+          <div>
+            <span class="text-[10px] font-bold uppercase text-emerald-600 tracking-wider">Tabel Excel Tabungan</span>
+            <h3 class="text-base md:text-lg font-extrabold text-[#1E2238]">Rincian & Rekap Tabungan Warga</h3>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-rekap-tabungan')" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Scrollable Table Container -->
+      <div class="overflow-x-auto flex-1 border border-gray-200 rounded-2xl shadow-inner">
+        <table class="w-full text-xs text-left border-collapse min-w-[640px]">
+          <thead class="bg-emerald-600 text-white font-extrabold sticky top-0 shadow-sm uppercase tracking-wider text-[11px]">
+            <tr>
+              <th class="p-3 text-center w-10 border-r border-emerald-500/40">No</th>
+              <th class="p-3 border-r border-emerald-500/40">Keluarga (KK)</th>
+              <th class="p-3 border-r border-emerald-500/40">Nama Peserta</th>
+              <th class="p-3 border-r border-emerald-500/40">Status Keluarga</th>
+              <th class="p-3 text-center border-r border-emerald-500/40">No. Rumah</th>
+              <th class="p-3 text-right border-r border-emerald-500/40">Tabungan Individual</th>
+              <th class="p-3 text-right">Total Tabungan Keluarga</th>
+            </tr>
+          </thead>
+          <tbody id="rekap-tabungan-table-body" class="divide-y divide-gray-200">
+            <!-- Dynamic Data Rendered via js.html -->
+          </tbody>
+          <tfoot id="rekap-tabungan-table-foot" class="bg-emerald-50 font-extrabold text-emerald-900 border-t-2 border-emerald-300">
+            <!-- Dynamic Footer Rendered via js.html -->
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between pt-1 flex-shrink-0 text-xs">
+        <p class="text-gray-400 text-[11px] italic">*Warna latar belakang membedakan tiap kelompok keluarga.</p>
+        <button onclick="closeModal('modal-rekap-tabungan')" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SETOR TABUNGAN, LOG RIWAYAT & KWITANSI -->
+  <div id="modal-tabungan" onclick="closeModalOnBackdrop(event, 'modal-tabungan')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div>
+          <span class="text-xs font-bold uppercase text-[#EA6A9C] tracking-wider">Sistem Tabungan Warga</span>
+          <h3 id="tabungan-modal-nama" class="text-lg font-extrabold text-[#1E2238]">Budi Santoso</h3>
+          <p id="tabungan-modal-id" class="text-xs text-gray-400 font-mono">HAL-0001</p>
+        </div>
+        <button onclick="closeModal('modal-tabungan')" class="text-gray-400 hover:text-gray-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex items-center justify-between">
+        <div>
+          <p class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Total Tabungan Saat Ini</p>
+          <p id="tabungan-modal-total" class="text-2xl font-black text-emerald-700">Rp 0</p>
+        </div>
+        <span class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center font-bold text-sm">Rp</span>
+      </div>
+
+      <div id="admin-setor-form-container" class="space-y-3 pt-2">
+        <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider">Input Setoran Tabungan Baru (Rp)</label>
+        <form onsubmit="event.preventDefault(); submitTabunganDeposit();" class="flex gap-2">
+          <div class="relative flex-1">
+            <span class="absolute left-3.5 top-3.5 text-xs font-bold text-gray-400">Rp</span>
+            <input type="number" id="input-setoran-nominal" min="1000" placeholder="50000" onkeydown="if(event.key==='Enter') { event.preventDefault(); submitTabunganDeposit(); }" class="w-full input-modern text-xs pl-10 py-3 text-[#1E2238]">
+          </div>
+          <button type="submit" id="btn-submit-setor" class="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold shadow-md flex-shrink-0">
+            Tambah Setoran
+          </button>
+        </form>
+      </div>
+
+      <div class="pt-2">
+        <h4 class="text-xs font-bold uppercase text-gray-400 tracking-wider mb-2">Riwayat Log Setoran (Real-time)</h4>
+        <div id="tabungan-log-history" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <div class="text-center py-4 text-xs text-gray-400">Memuat riwayat...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CRUD RUNDOWN ACARA (SUPER ADMIN) -->
+  <div id="modal-rundown-crud" onclick="closeModalOnBackdrop(event, 'modal-rundown-crud')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div>
+          <span class="text-xs font-bold uppercase text-[#5A56EC] tracking-wider">Super Admin Modul</span>
+          <h3 id="modal-rundown-title" class="text-lg font-extrabold text-[#1E2238]">Kelola Agenda Rundown</h3>
+        </div>
+        <button onclick="closeModal('modal-rundown-crud')" class="text-gray-400 hover:text-gray-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="event.preventDefault(); saveRundownProcess();" class="space-y-4">
+        <input type="hidden" id="rd-input-id">
+        
+        <div>
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">Pilih Hari Agenda</label>
+          <select id="rd-input-hari" class="w-full input-modern text-xs font-bold text-[#1E2238]">
+            <option value="Hari 1">Hari Ke-1</option>
+            <option value="Hari 2">Hari Ke-2</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">Waktu / Jam Agenda</label>
+          <input type="text" id="rd-input-jam" required placeholder="Contoh: 06:00 - 06:30 WIB" class="w-full input-modern text-xs text-[#1E2238]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">Judul Kegiatan</label>
+          <input type="text" id="rd-input-judul" required placeholder="Contoh: Kumpul & Absensi Peserta" class="w-full input-modern text-xs text-[#1E2238]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">Keterangan / Lokasi Detail</label>
+          <textarea id="rd-input-keterangan" rows="3" placeholder="Contoh: Depan Pos Satpam RT 03" class="w-full input-modern text-xs text-[#1E2238]"></textarea>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModal('modal-rundown-crud')" class="flex-1 py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-600 hover:bg-gray-50">Batal</button>
+          <button type="submit" id="btn-save-rd" class="flex-1 py-3 bg-[#5A56EC] hover:bg-[#4844d1] text-white rounded-2xl text-xs font-bold shadow-lg shadow-indigo-500/20">Simpan Agenda</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CRUD KONTAK PANITIA (SUPER ADMIN) -->
+  <div id="modal-kontak-crud" onclick="closeModalOnBackdrop(event, 'modal-kontak-crud')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div>
+          <span class="text-xs font-bold uppercase text-emerald-600 tracking-wider">Super Admin Modul</span>
+          <h3 id="modal-kontak-title" class="text-lg font-extrabold text-[#1E2238]">Kelola Kontak Panitia</h3>
+        </div>
+        <button onclick="closeModal('modal-kontak-crud')" class="text-gray-400 hover:text-gray-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form onsubmit="event.preventDefault(); saveKontakProcess();" class="space-y-4">
+        <input type="hidden" id="kt-input-id">
+
+        <div>
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">Jabatan / Peran Panitia</label>
+          <input type="text" id="kt-input-jabatan" required placeholder="Contoh: Koordinator Bus 1 / Ketua RT" class="w-full input-modern text-xs text-[#1E2238]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">Nama Lengkap Panitia</label>
+          <input type="text" id="kt-input-nama" required placeholder="Contoh: Pak Agus" class="w-full input-modern text-xs text-[#1E2238]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">No. WhatsApp Active</label>
+          <input type="tel" id="kt-input-whatsapp" required placeholder="Contoh: 081234567890" class="w-full input-modern text-xs text-[#1E2238]">
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModal('modal-kontak-crud')" class="flex-1 py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-600 hover:bg-gray-50">Batal</button>
+          <button type="submit" id="btn-save-kt" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-emerald-500/20">Simpan Kontak</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RESTORE DATABASE 1-KLIK (SUPER ADMIN) -->
+  <div id="modal-restore" onclick="closeModalOnBackdrop(event, 'modal-restore')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div>
+          <span class="text-xs font-bold uppercase text-amber-600 tracking-wider">Super Admin Recovery</span>
+          <h3 class="text-lg font-extrabold text-[#1E2238]">Restore All Database</h3>
+        </div>
+        <button onclick="closeModal('modal-restore')" class="text-gray-400 hover:text-gray-600 p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-gray-500">Pilih file `.json` hasil backup cadangan atau tempelkan data JSON di bawah untuk memulihkan seluruh database.</p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Unggah File Backup (.json)</label>
+          <input type="file" id="input-restore-file" accept=".json" onchange="handleRestoreFileSelect(event)" class="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">Atau Tempelkan Data JSON Backup</label>
+          <textarea id="input-restore-json" rows="4" placeholder='{"appName":"Web App Halal Bihalal RT"...}' class="w-full input-modern text-xs font-mono text-gray-800"></textarea>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button type="button" onclick="closeModal('modal-restore')" class="flex-1 py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-600 hover:bg-gray-50">Batal</button>
+        <button type="button" onclick="triggerRestoreDatabase()" id="btn-submit-restore" class="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-2xl text-xs font-bold shadow-lg shadow-amber-500/20">Pulihkan Sekarang</button>
+      </div>
     </div>
   </div>
 
   <!-- MODAL: TAMBAH ANGGOTA KELUARGA -->
-  <div id="modal-family" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5">
+  <div id="modal-family" onclick="closeModalOnBackdrop(event, 'modal-family')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl space-y-5">
       <div class="flex items-center justify-between">
         <div>
           <span class="text-xs font-bold uppercase text-[#5A56EC] tracking-wider">Sub-Peserta</span>
@@ -307,7 +699,6 @@
         <div>
           <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">PIN Akses Warga (4 Digit)</label>
           <input type="password" id="fam-pin-akses" maxlength="4" required placeholder="Masukkan PIN 4-Digit" class="w-full input-modern text-center font-extrabold tracking-widest text-base text-[#1E2238]">
-          <p class="text-[11px] text-gray-400 mt-1">Dapatkan PIN 4-digit dari Kepala Keluarga yang sudah mendaftar.</p>
         </div>
 
         <div>
@@ -328,6 +719,11 @@
           </select>
         </div>
 
+        <div>
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">Setoran Awal Tabungan (Rp)</label>
+          <input type="number" id="fam-setoran-awal" min="0" placeholder="Contoh: 50000 (Boleh 0)" class="w-full input-modern text-xs text-[#1E2238]">
+        </div>
+
         <div class="flex gap-2 pt-2">
           <button type="button" onclick="closeModal('modal-family')" class="flex-1 py-3 border border-gray-200 rounded-2xl text-xs font-bold text-gray-600 hover:bg-gray-50">Batal</button>
           <button type="submit" id="btn-submit-fam" class="flex-1 py-3 bg-[#5A56EC] hover:bg-[#4844d1] text-white rounded-2xl text-xs font-bold shadow-lg shadow-indigo-500/20">Simpan Anggota</button>
@@ -336,9 +732,9 @@
     </div>
   </div>
 
-  <!-- MODAL: REGISTRASI SUKSES & WHATSAPP DIRECT LINK -->
-  <div id="modal-success-reg" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl text-center space-y-4">
+  <!-- MODAL: REGISTRASI SUKSES -->
+  <div id="modal-success-reg" onclick="closeModalOnBackdrop(event, 'modal-success-reg')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl text-center space-y-4">
       <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
       </div>
@@ -350,17 +746,16 @@
       <div class="bg-pink-50/80 border border-pink-200 p-4 rounded-2xl space-y-1">
         <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">PIN Akses Warga Anda</p>
         <p id="succ-pin-display" class="text-3xl font-black text-[#EA6A9C] tracking-widest font-mono">0000</p>
-        <p class="text-[10px] text-pink-600 font-medium">Jangan sampai hilang! Dibutuhkan saat tambah keluarga.</p>
       </div>
 
       <div class="text-left bg-gray-50 p-3.5 rounded-xl text-xs space-y-1">
         <p><span class="text-gray-400">ID Transaksi:</span> <span id="succ-id-display" class="font-bold font-mono text-[#1E2238]">HAL-0000</span></p>
         <p><span class="text-gray-400">Alokasi Bus:</span> <span id="succ-bus-display" class="font-bold text-[#EA6A9C]">Bus 1</span></p>
-        <p><span class="text-gray-400">Nomor Kursi:</span> <span id="succ-seat-display" class="font-bold text-[#5A56EC]">1A</span></p>
+        <p><span class="text-gray-400">Nomor Kursi:</span> <span id="succ-seat-display" class="font-bold text-[#5A56EC]">01</span></p>
+        <p><span class="text-gray-400">Setoran Awal:</span> <span id="succ-tabungan-display" class="font-bold text-emerald-600">Rp 0</span></p>
       </div>
 
       <a id="btn-wa-confirm" href="#" target="_blank" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition">
-        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
         <span>Kirim Konfirmasi ke WA Admin</span>
       </a>
 
@@ -369,14 +764,11 @@
   </div>
 
   <!-- MODAL: LOGIN ADMIN -->
-  <div id="modal-login" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl space-y-5">
+  <div id="modal-login" onclick="closeModalOnBackdrop(event, 'modal-login')" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div onclick="event.stopPropagation()" class="modal-box-animate bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl space-y-5">
       <div class="text-center">
-        <div class="w-12 h-12 bg-pink-100 text-[#EA6A9C] rounded-2xl flex items-center justify-center mx-auto mb-3">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        </div>
         <h3 class="text-lg font-extrabold text-[#1E2238]">Akses Khusus Admin</h3>
-        <p class="text-xs text-[#7E859E] mt-1">Masukkan PIN Admin untuk kelola status & tukar kursi.</p>
+        <p class="text-xs text-[#7E859E] mt-1">Masukkan PIN Admin untuk kelola tabungan & denah.</p>
       </div>
 
       <form onsubmit="event.preventDefault(); submitAdminLogin();" class="space-y-4">
