@@ -34,6 +34,59 @@
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
+  .modal-70vw {
+    width: 95vw;
+    max-width: 900px;
+  }
+
+  @media (min-width: 768px) {
+    .modal-70vw {
+      width: 70vw;
+    }
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #F1F5F9;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+
+  .iphone-16-pro-frame {
+    background: #1C1C1E;
+    border: 3px solid #3A3A3C;
+    border-radius: 28px;
+    box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.35), inset 0 0 0 1.5px rgba(255, 255, 255, 0.1);
+    position: relative;
+    padding: 6px;
+    overflow: hidden;
+  }
+
+  .iphone-dynamic-island {
+    width: 65px;
+    height: 14px;
+    background-color: #000000;
+    border-radius: 14px;
+    margin: 2px auto 6px auto;
+    position: relative;
+    z-index: 30;
+  }
+
+  .pin-blur-sample {
+    filter: blur(7px);
+    user-select: none;
+    -webkit-user-select: none;
+    transition: filter 0.3s ease;
+  }
+
   .card-seat {
     border-radius: 16px;
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -98,7 +151,6 @@
     transform: scale(0.97);
   }
 
-  /* Seat Selected Swap Mode */
   .seat-selected-swap {
     border: 2.5px solid #EA6A9C !important;
     animation: pulseBorder 1.5s infinite;
