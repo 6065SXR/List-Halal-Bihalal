@@ -55,6 +55,11 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     loadDataFromBackend();
+    
+    // Otomatis Tampilkan Dialog Himbauan PIN Akses 70% Layar Saat Pertama Dibuka
+    setTimeout(function() {
+      openModal('modal-welcome-pin-guide');
+    }, 400);
   });
 
   function loadDataFromBackend() {
@@ -104,9 +109,6 @@
     renderInfoTab();
   }
 
-  /* =========================================================================
-   * REVISI GAMBAR 1 & 2: MODAL POPUP REKAP WARGA & TABUNGAN EXCEL-STYLE
-   * ========================================================================= */
   function findSeatInfoForPeserta(idOrName) {
     if (!appState.seats || appState.seats.length === 0) return '-';
     var found = appState.seats.find(function(s) {
@@ -466,7 +468,7 @@
       if (item) {
         document.getElementById('kt-input-jabatan').value = item.jabatan || '';
         document.getElementById('kt-input-nama').value = item.nama || '';
-        document.getElementById('kt-input-whatsapp').value = item.noWhatsapp || '';
+        document.getElementById('kt-input-[#whatsapp]').value = item.noWhatsapp || '';
       }
     } else {
       titleEl.textContent = 'Tambah Kontak Panitia';
@@ -1672,11 +1674,17 @@
   }
 
   function openModal(id) {
-    document.getElementById(id).classList.remove('hidden');
+    var target = document.getElementById(id);
+    if (target) {
+      target.classList.remove('hidden');
+    }
   }
 
   function closeModal(id) {
-    document.getElementById(id).classList.add('hidden');
+    var target = document.getElementById(id);
+    if (target) {
+      target.classList.add('hidden');
+    }
   }
 
   function closeModalOnBackdrop(event, modalId) {
