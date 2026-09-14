@@ -1,1 +1,370 @@
+<script>
+  var appState = {
+    peserta: [],
+    seats: [],
+    stats: {},
+    currentBusId: 'Bus 1',
+    adminRole: null,
+    currentFilter: 'SEMUA',
+    searchQuery: '',
+    selectedSeatForSwap: null,
+    activeTabunganPeserta: null,
+    adminWaPhone: '6281234567890',
+    currentInfoHari: 'Hari 1',
+    rundownList: [],
+    kontakList: []
+  };
 
+  var previewDummyRundown = [
+    { id: 'RD-001', hari: 'Hari 1', jam: '06:00 - 06:30', judul: 'Kumpul & Absensi Peserta Bus', keterangan: 'Titik Kumpul: Kp. Baru I Jl. Marga Mulya (Depan Pos Satpam RT 03)' },
+    { id: 'RD-002', hari: 'Hari 1', jam: '06:45 WIB', judul: 'Keberangkatan Bus Medium 1 & Bus 2', keterangan: 'Seluruh armada berangkat bersama. Mohon hadir tepat waktu!' },
+    { id: 'RD-003', hari: 'Hari 1', jam: '09:30 - 11:30', judul: 'Pembukaan, Tausiyah & Halal Bihalal', keterangan: 'Sambutan Ketua RT, Mushafahah/Salaman Warga, dan Tausiyah Agama' },
+    { id: 'RD-004', hari: 'Hari 1', jam: '11:30 - 13:30', judul: 'Makan Siang & Ramah Tamah', keterangan: 'Santap Catering bersama & Pembagian Doorprize Digital' },
+    { id: 'RD-005', hari: 'Hari 1', jam: '15:30 WIB', judul: 'Persiapan Pulang ke Kamp Baru I', keterangan: 'Pengecekan ulang seluruh anggota keluarga di Bus 1 & Bus 2' },
+    { id: 'RD-006', hari: 'Hari 2', jam: '07:30 - 09:00', judul: 'Senam Pagi Warga & Sarapan Bersama', keterangan: 'Area Lapangan Villa / Resort Halal Bihalal' },
+    { id: 'RD-007', hari: 'Hari 2', jam: '09:30 - 12:00', judul: 'Fun Games Warga & Pembagian Hadiah', keterangan: 'Lomba keakraban antar RT & Door Prize Utama' },
+    { id: 'RD-008', hari: 'Hari 2', jam: '13:00 WIB', judul: 'Check Out & Perjalanan Pulang', keterangan: 'Seluruh armada bus kembali ke Jakarta' }
+  ];
+
+  var previewDummyKontak = [
+    { id: 'KT-001', jabatan: 'Koordinator Bus 1', nama: 'Pak Agus', noWhatsapp: '081234567890' },
+    { id: 'KT-002', jabatan: 'Koordinator Bus 2', nama: 'Tommy H', noWhatsapp: '081234567890' },
+    { id: 'KT-003', jabatan: 'Ketua RT 03', nama: 'Pak Sugeng', noWhatsapp: '081398765432' }
+  ];
+
+  var previewDummySeats = [];
+  (function initPreviewSeats() {
+    ['Bus 1', 'Bus 2'].forEach(function(busId) {
+      for (var r = 1; r <= 7; r++) {
+        var startNum = (r - 1) * 4 + 1;
+        var s1 = ('0' + startNum).slice(-2);
+        var s2 = ('0' + (startNum + 1)).slice(-2);
+        var s3 = ('0' + (startNum + 2)).slice(-2);
+        var s4 = ('0' + (startNum + 3)).slice(-2);
+
+        previewDummySeats.push({ idBus: busId, noKursi: s1, baris: r, tipeKursi: 'Window (Kiri)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0001' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Budi Santoso' : '' });
+        previewDummySeats.push({ idBus: busId, noKursi: s2, baris: r, tipeKursi: 'Aisle (Kiri)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0002' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Siti Aminah' : '' });
+        previewDummySeats.push({ idBus: busId, noKursi: s3, baris: r, tipeKursi: 'Aisle (Kanan)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0003' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Rizky Pratama' : '' });
+        previewDummySeats.push({ idBus: busId, noKursi: s4, baris: r, tipeKursi: 'Window (Kanan)', idPeserta: (busId==='Bus 1' && r === 1) ? 'HAL-0004' : '', namaTerisi: (busId==='Bus 1' && r === 1) ? 'Dewi Lestari' : '' });
+      }
+      for (var b = 29; b <= 33; b++) {
+        previewDummySeats.push({ idBus: busId, noKursi: String(b), baris: 8, tipeKursi: 'Belakang Penuh', idPeserta: '', namaTerisi: '' });
+      }
+    });
+  })();
+
+  document.addEventListener('DOMContentLoaded', function() {
+    loadDataFromBackend();
+    
+    // Otomatis Tampilkan Dialog Himbauan PIN Akses 70% Layar Saat Pertama Dibuka
+    setTimeout(function() {
+      openModal('modal-welcome-pin-guide');
+    }, 400);
+  });
+
+  function loadDataFromBackend() {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            appState.peserta = res.data.peserta || [];
+            appState.seats = res.data.seats || [];
+            appState.stats = res.data.stats || {};
+            if (res.data.info) {
+              appState.rundownList = res.data.info.rundown || [];
+              appState.kontakList = res.data.info.kontak || [];
+            }
+            renderAll();
+          } else {
+            showToast(res ? res.message : 'Gagal memuat data', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showToast('Koneksi backend gagal: ' + err.message, 'error');
+        })
+        .getAppData(appState.searchQuery, appState.currentFilter);
+    } else {
+      appState.peserta = [
+        { id: 'HAL-0001', nama: 'Budi Santoso', noRumah: 'No. 12', catatanLokasi: 'Dekat pos satpam', noWhatsapp: '081234567890', jumlahTabungan: 500000, familyMembers: [{ id: 'HAL-0002', nama: 'Siti Aminah', hubungan: 'Istri', jumlahTabungan: 0 }, { id: 'HAL-0003', nama: 'Rizky Pratama', hubungan: 'Anak 1', jumlahTabungan: 0 }] },
+        { id: 'HAL-0004', nama: 'Dewi Lestari', noRumah: 'No. 05', catatanLokasi: 'Depan pos satpam', noWhatsapp: '081876543210', jumlahTabungan: 200000, familyMembers: [] }
+      ];
+      appState.seats = previewDummySeats;
+      appState.rundownList = previewDummyRundown;
+      appState.kontakList = previewDummyKontak;
+      appState.stats = {
+        totalWarga: 4,
+        totalKepalaKeluarga: 2,
+        totalTabungan: 700000,
+        kursiTerisiBus1: 4,
+        kursiTerisiBus2: 0
+      };
+      renderAll();
+    }
+  }
+
+  function findSeatInfoForPeserta(idOrName) {
+    if (!appState.seats || appState.seats.length === 0) return '-';
+    var found = appState.seats.find(function(s) {
+      return (s.idPeserta && s.idPeserta === idOrName) || (s.namaTerisi && s.namaTerisi.toLowerCase().trim() === String(idOrName).toLowerCase().trim());
+    });
+    if (found && found.idBus) {
+      return found.idBus + ' (' + ('0' + found.noKursi).slice(-2) + ')';
+    }
+    return '-';
+  }
+
+  function submitRegistration() {
+    var btn = document.getElementById('btn-submit-reg');
+    btn.disabled = true;
+    btn.innerHTML = '<span>Menyimpan...</span>';
+
+    var payload = {
+      nama: document.getElementById('reg-nama').value,
+      noWhatsapp: document.getElementById('reg-whatsapp').value,
+      noRumah: document.getElementById('reg-norumah').value,
+      catatanLokasi: document.getElementById('reg-catatan').value,
+      setoranAwal: document.getElementById('reg-setoran-awal').value || 0
+    };
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Daftar Sekarang & Ambil Kursi Bus</span>';
+          if (res && res.success) {
+            document.getElementById('form-register').reset();
+            loadDataFromBackend();
+            setupSuccessModalAndWaLink(res.nama, res.idTransaksi, res.assignedBus, res.assignedSeat, res.pinAkses, res.setoranAwal);
+            openModal('modal-success-reg');
+          } else {
+            showToast(res ? res.message : 'Gagal mendaftar', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Daftar Sekarang & Ambil Kursi Bus</span>';
+          showToast('Error: ' + err.message, 'error');
+        })
+        .registerParticipant(payload);
+    } else {
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Daftar Sekarang & Ambil Kursi Bus</span>';
+        var generatedPin = String(Math.floor(1000 + Math.random() * 9000));
+        var dummyId = 'HAL-000' + (appState.peserta.length + 1);
+        
+        setupSuccessModalAndWaLink(payload.nama, dummyId, 'Bus 1', '01', generatedPin, payload.setoranAwal);
+        openModal('modal-success-reg');
+        document.getElementById('form-register').reset();
+        loadDataFromBackend();
+      }, 500);
+    }
+  }
+
+  function setupSuccessModalAndWaLink(nama, idTransaksi, busId, seat, pin, setoranAwal) {
+    document.getElementById('succ-pin-display').textContent = pin || '1234';
+    document.getElementById('succ-id-display').textContent = idTransaksi || 'HAL-XXXX';
+    document.getElementById('succ-bus-display').textContent = busId || 'Bus 1';
+    document.getElementById('succ-seat-display').textContent = ('0' + seat).slice(-2) || '01';
+
+    var setoranVal = parseInt(setoranAwal || 0, 10);
+    document.getElementById('succ-tabungan-display').textContent = 'Rp ' + setoranVal.toLocaleString('id-ID');
+
+    var waMessage = "Assalamu'alaikum Admin Halal Bihalal RT,\n\n" +
+      "Saya telah mendaftar peserta Halal Bihalal dengan rincian berikut:\n" +
+      "• *Nama*: " + nama + "\n" +
+      "• *ID Transaksi*: " + idTransaksi + "\n" +
+      "• *Armada*: " + busId + "\n" +
+      "• *Nomor Kursi*: " + ('0' + seat).slice(-2) + "\n" +
+      "• *PIN Akses Warga*: " + pin + "\n" +
+      "• *Setoran Awal Tabungan*: Rp " + setoranVal.toLocaleString('id-ID') + "\n\n" +
+      "Mohon konfirmasi pendaftaran saya. Terima kasih!";
+
+    var encodedMessage = encodeURIComponent(waMessage);
+    document.getElementById('btn-wa-confirm').href = "https://wa.me/" + appState.adminWaPhone + "?text=" + encodedMessage;
+  }
+
+  function openAddFamilyModal(sponsorId, sponsorNama) {
+    document.getElementById('fam-sponsor-id').value = sponsorId;
+    document.getElementById('fam-sponsor-name').value = sponsorNama;
+    document.getElementById('fam-member-name').value = '';
+    document.getElementById('fam-pin-akses').value = '';
+    document.getElementById('fam-setoran-awal').value = '';
+    openModal('modal-family');
+  }
+
+  function submitFamilyMember() {
+    var btn = document.getElementById('btn-submit-fam');
+    btn.disabled = true;
+
+    var payload = {
+      sponsorId: document.getElementById('fam-sponsor-id').value,
+      sponsorNama: document.getElementById('fam-sponsor-name').value,
+      pinAkses: document.getElementById('fam-pin-akses').value,
+      namaAnggota: document.getElementById('fam-member-name').value,
+      hubungan: document.getElementById('fam-relation').value,
+      setoranAwal: document.getElementById('fam-setoran-awal').value || 0
+    };
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          if (res && res.success) {
+            closeModal('modal-family');
+            showToast('Anggota keluarga berhasil didaftarkan!', 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'PIN Akses Salah!', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .addFamilyMember(payload);
+    } else {
+      btn.disabled = false;
+      closeModal('modal-family');
+      showToast('Preview: Anggota keluarga ditambahkan', 'success');
+    }
+  }
+
+  function submitAdminLogin() {
+    var pin = document.getElementById('admin-pin-input').value;
+    var btn = document.getElementById('btn-submit-login');
+    btn.disabled = true;
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          if (res && res.success) {
+            appState.adminRole = res.role;
+            onAdminLoginSuccess();
+            closeModal('modal-login');
+            showToast('Login berhasil sebagai ' + res.role, 'success');
+          } else {
+            showToast(res ? res.message : 'PIN salah', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .adminLogin(pin);
+    } else {
+      btn.disabled = false;
+      if (pin === '1234' || pin === '9999') {
+        appState.adminRole = (pin === '9999') ? 'Super Admin' : 'Admin';
+        onAdminLoginSuccess();
+        closeModal('modal-login');
+        showToast('Login preview berhasil sebagai ' + appState.adminRole, 'success');
+      } else {
+        showToast('PIN salah (Gunakan 1234 atau 9999)', 'error');
+      }
+    }
+  }
+
+  function onAdminLoginSuccess() {
+    document.getElementById('btn-open-login').classList.add('hidden');
+    document.getElementById('admin-badge').classList.remove('hidden');
+    document.getElementById('admin-role-text').textContent = appState.adminRole;
+    document.getElementById('admin-swap-indicator').classList.remove('hidden');
+    document.getElementById('btn-admin-print-bus').classList.remove('hidden');
+
+    var btnAddRD = document.getElementById('btn-admin-add-rundown');
+    var btnAddKT = document.getElementById('btn-admin-add-kontak');
+    if (btnAddRD) btnAddRD.classList.remove('hidden');
+    if (btnAddKT) btnAddKT.classList.remove('hidden');
+
+    if (appState.adminRole === 'Super Admin') {
+      var superPanel = document.getElementById('super-admin-panel');
+      if (superPanel) superPanel.classList.remove('hidden');
+    }
+
+    renderAll();
+  }
+
+  function logoutAdmin() {
+    appState.adminRole = null;
+    appState.selectedSeatForSwap = null;
+    document.getElementById('btn-open-login').classList.remove('hidden');
+    document.getElementById('admin-badge').classList.add('hidden');
+    document.getElementById('admin-swap-indicator').classList.add('hidden');
+    document.getElementById('btn-admin-print-bus').classList.add('hidden');
+    
+    var btnAddRD = document.getElementById('btn-admin-add-rundown');
+    var btnAddKT = document.getElementById('btn-admin-add-kontak');
+    if (btnAddRD) btnAddRD.classList.add('hidden');
+    if (btnAddKT) btnAddKT.classList.add('hidden');
+
+    var superPanel = document.getElementById('super-admin-panel');
+    if (superPanel) superPanel.classList.add('hidden');
+
+    showToast('Keluar dari mode Admin', 'info');
+    renderAll();
+  }
+
+  function deleteParticipantProcess(idTransaksi) {
+    showToast('Menghapus data peserta...', 'info');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast('Peserta berhasil dihapus.', 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menghapus', 'error');
+          }
+        })
+        .deleteParticipant(idTransaksi);
+    } else {
+      showToast('Preview: Peserta dihapus.', 'success');
+    }
+  }
+
+  function openModal(id) {
+    var target = document.getElementById(id);
+    if (target) {
+      target.classList.remove('hidden');
+    }
+  }
+
+  function closeModal(id) {
+    var target = document.getElementById(id);
+    if (target) {
+      target.classList.add('hidden');
+    }
+  }
+
+  function closeModalOnBackdrop(event, modalId) {
+    if (event.target.id === modalId) {
+      closeModal(modalId);
+    }
+  }
+
+  function showToast(message, type) {
+    var container = document.getElementById('toast-container');
+    var toast = document.createElement('div');
+    var bg = (type === 'success') ? 'bg-emerald-600 text-white' : (type === 'error') ? 'bg-rose-600 text-white' : 'bg-gray-800 text-white';
+    
+    toast.className = 'toast-item ' + bg + ' px-4 py-3 shadow-xl flex items-center gap-2.5 text-xs font-bold mb-2.5';
+    toast.innerHTML = '<span>' + escapeHtml(message) + '</span>';
+    
+    container.appendChild(toast);
+    setTimeout(function() {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 3500);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+</script>
