@@ -180,13 +180,25 @@
             <input type="text" id="reg-catatan" placeholder="Contoh: Dekat pos satpam RT 03 / cat pagar hijau" class="w-full input-modern text-sm text-[#1E2238]">
           </div>
 
-          <div>
-            <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-2">Setoran Awal Tabungan (Rp)</label>
+          <!-- Container Setoran Awal (Khusus Admin / Super Admin) -->
+          <div id="container-reg-setoran-awal" class="hidden">
+            <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-2">
+              Setoran Awal Tabungan (Rp) <span class="text-pink-600 font-extrabold">(Khusus Mode Admin)</span>
+            </label>
             <div class="relative">
               <span class="absolute left-4 top-3.5 text-sm font-bold text-gray-400">Rp</span>
-              <input type="number" id="reg-setoran-awal" min="0" placeholder="Contoh: 100000 (Boleh 0 jika belum setor)" class="w-full input-modern text-sm text-[#1E2238] pl-11">
+              <input type="number" id="reg-setoran-awal" min="0" placeholder="Contoh: 100000" class="w-full input-modern text-sm text-[#1E2238] pl-11">
             </div>
-            <p class="text-[11px] text-gray-400 mt-1">Sistem pembayaran menggunakan tabungan bertahap/cicilan.</p>
+            <p class="text-[11px] text-gray-400 mt-1">Pencatatan tabungan awal untuk pendaftar yang disetorkan langsung ke Admin.</p>
+          </div>
+
+          <!-- Info Pembatasan Pengisian Tabungan untuk Warga Publik -->
+          <div id="notice-reg-setoran-public" class="bg-amber-50 border border-amber-200/80 p-3.5 rounded-2xl flex items-center gap-3 text-xs text-amber-900 font-semibold shadow-sm">
+            <span class="text-xl flex-shrink-0">🔒</span>
+            <div>
+              <p class="font-extrabold text-[#1E2238]">Pemberitahuan Setoran Tabungan Warga:</p>
+              <p class="text-[11px] text-amber-800 font-medium leading-relaxed mt-0.5">Untuk setoran tabungan bisa langsung ke Bapak Agus Sulistyo.</p>
+            </div>
           </div>
 
           <button type="submit" id="btn-submit-reg" class="w-full btn-action bg-[#EA6A9C] hover:bg-[#d95589] text-white font-bold py-4 rounded-2xl shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 text-sm mt-4">
@@ -253,7 +265,7 @@
             </div>
 
             <button id="btn-admin-print-bus" onclick="printBusSeatLayout()" class="hidden bg-[#265768] hover:bg-[#1b3e4a] text-white px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
               <span>Cetak Denah Ini</span>
             </button>
           </div>
@@ -460,29 +472,46 @@
           </p>
         </div>
 
-        <!-- Pratinjau Tampilan Header -->
-        <div class="flex items-center justify-between pt-1">
-          <span class="text-[11px] font-extrabold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-            <span>📱</span> PRATINJAU TAMPILAN DI IPHONE 16 PRO MAX
-          </span>
+        <!-- Header Tag Hasil PIN -->
+        <div class="flex items-center justify-end pt-1">
           <span class="bg-pink-100 text-[#EA6A9C] text-[10px] font-extrabold px-2.5 py-0.5 rounded-md">
             Contoh Tampilan Hasil PIN
           </span>
         </div>
 
-        <!-- iPhone 16 Pro Mockup Frame (Crisp High-Contrast Rendering) -->
-        <div class="iphone-16-pro-frame max-w-[300px] mx-auto my-1">
-          <div class="iphone-dynamic-island"></div>
-          <div class="bg-white rounded-2xl p-4 text-center space-y-2.5 border border-gray-100 shadow-sm">
-            <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        <!-- Smartphone Mockup Frame dengan Status Bar Presisi Gambar 1 -->
+        <div class="max-w-[310px] mx-auto my-1 border-[6px] border-[#1e1e24] rounded-[42px] bg-white overflow-hidden shadow-2xl relative">
+          <!-- Status Bar Atas HP (Jam 12:44, Notch Dynamic Island, Sinyal, Wifi, Baterai 38) -->
+          <div class="bg-white px-6 pt-3 pb-2 flex items-center justify-between text-[#1E2238] select-none">
+            <span class="text-xs font-black tracking-tight font-sans">12:44</span>
+            
+            <!-- Dynamic Island Notch Tengah -->
+            <div class="w-20 h-4 bg-black rounded-full mx-auto -mt-0.5"></div>
+            
+            <!-- Indikator Kanan: Sinyal, Wi-Fi, dan Baterai 38 -->
+            <div class="flex items-center gap-1.5 text-black">
+              <!-- Sinyal Icon -->
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.2.2-.2.51 0 .71.1.1.23.15.35.15s.26-.05.35-.15l.77-.77C7.3 20.37 9.53 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 16c-3.86 0-7-3.14-7-7s3.14-7 7-7 7 3.14 7 7-3.14 7-7 7z"/></svg>
+              <!-- Wi-Fi Icon -->
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/></svg>
+              <!-- Baterai Icon 38 -->
+              <div class="flex items-center justify-center border border-black rounded-md px-1 py-0.5 text-[9px] font-black leading-none bg-black text-white">
+                38
+              </div>
+            </div>
+          </div>
+
+          <!-- Layar Konten Mockup Pendaftaran Berhasil -->
+          <div class="bg-white p-5 text-center space-y-3 border-t border-gray-100">
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
             </div>
             <div>
-              <p class="text-sm font-black text-[#1E2238]">Pendaftaran Berhasil!</p>
-              <p class="text-xs text-gray-700 font-medium leading-normal mt-1">Simpan PIN Akses di bawah ini untuk menambahkan anggota keluarga Anda nanti.</p>
+              <p class="text-base font-black text-[#1E2238] tracking-tight">Pendaftaran Berhasil!</p>
+              <p class="text-xs text-gray-600 font-medium leading-normal mt-1">Simpan PIN Akses di bawah ini untuk menambahkan anggota keluarga Anda nanti.</p>
             </div>
 
-            <div class="bg-pink-50/90 border-2 border-pink-200/80 p-3 rounded-2xl space-y-1 relative overflow-hidden">
+            <div class="bg-pink-50/90 border-2 border-pink-200/80 p-3.5 rounded-2xl space-y-1 relative overflow-hidden">
               <p class="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">PIN AKSES WARGA ANDA</p>
               <!-- Contoh angka PIN disensor / di-blur visual -->
               <p class="text-2xl font-black text-[#EA6A9C] tracking-[0.2em] font-mono blur-[5px] select-none pointer-events-none">4 8 2 9</p>
@@ -793,9 +822,18 @@
           </select>
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">Setoran Awal Tabungan (Rp)</label>
-          <input type="number" id="fam-setoran-awal" min="0" placeholder="Contoh: 50000 (Boleh 0)" class="w-full input-modern text-xs text-[#1E2238]">
+        <!-- Container Setoran Awal Anggota Keluarga (Khusus Admin / Super Admin) -->
+        <div id="container-fam-setoran-awal" class="hidden">
+          <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">
+            Setoran Awal Tabungan (Rp) <span class="text-pink-600 font-extrabold">(Khusus Mode Admin)</span>
+          </label>
+          <input type="number" id="fam-setoran-awal" min="0" placeholder="Contoh: 50000" class="w-full input-modern text-xs text-[#1E2238]">
+        </div>
+
+        <!-- Info Pembatasan Tabungan Anggota Keluarga untuk Publik -->
+        <div id="notice-fam-setoran-public" class="bg-amber-50 border border-amber-200/80 p-3 rounded-2xl flex items-center gap-2.5 text-[11px] text-amber-800 font-medium">
+          <span class="text-base flex-shrink-0">🔒</span>
+          <span>Untuk setoran tabungan bisa langsung ke Bapak Agus Sulistyo.</span>
         </div>
 
         <div class="flex gap-2 pt-2">
