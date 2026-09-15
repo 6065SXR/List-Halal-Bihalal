@@ -466,9 +466,14 @@ function registerParticipant(payload) {
     var idTransaksi = generateSequentialId_();
     var nowFormatted = Utilities.formatDate(new Date(), 'Asia/Jakarta', 'dd/MM/yyyy HH:mm:ss');
     var alamatFix = 'Kamp baru I Jl. Marga Mulya';
-    var setoranAwal = parseInt(payload.setoranAwal || 0, 10);
-    if (isNaN(setoranAwal)) setoranAwal = 0;
     
+    // Proteksi Keuangan: Hanya izinkan setoran awal jika pendaftaran dilakukan oleh Admin / Super Admin
+    var setoranAwal = 0;
+    if (payload.adminRole === 'Admin' || payload.adminRole === 'Super Admin') {
+      setoranAwal = parseInt(payload.setoranAwal || 0, 10);
+      if (isNaN(setoranAwal)) setoranAwal = 0;
+    }
+
     var generatedPin = String(Math.floor(1000 + Math.random() * 9000));
 
     var newRow = [
@@ -498,7 +503,7 @@ function registerParticipant(payload) {
         newRow[2],
         setoranAwal,
         setoranAwal,
-        'Pendaftaran Awal'
+        payload.adminRole || 'Admin'
       ]);
     }
 
@@ -533,8 +538,13 @@ function addFamilyMember(payload) {
     var inputPin = String(payload.pinAkses || '').trim();
     var namaAnggota = String(payload.namaAnggota || '').trim();
     var hubungan = String(payload.hubungan || 'Istri').trim();
-    var setoranAwal = parseInt(payload.setoranAwal || 0, 10);
-    if (isNaN(setoranAwal)) setoranAwal = 0;
+
+    // Proteksi Keuangan: Hanya izinkan setoran awal jika ditambahkan oleh Admin / Super Admin
+    var setoranAwal = 0;
+    if (payload.adminRole === 'Admin' || payload.adminRole === 'Super Admin') {
+      setoranAwal = parseInt(payload.setoranAwal || 0, 10);
+      if (isNaN(setoranAwal)) setoranAwal = 0;
+    }
 
     if (!sponsorId || !namaAnggota) {
       return { success: false, message: 'ID Sponsor dan Nama Anggota wajib diisi.' };
@@ -596,7 +606,7 @@ function addFamilyMember(payload) {
         namaAnggota,
         setoranAwal,
         newTotal,
-        'Tambah Anggota (' + hubungan + ')'
+        payload.adminRole || 'Admin'
       ]);
     }
 
