@@ -171,7 +171,8 @@
       noWhatsapp: document.getElementById('reg-whatsapp').value,
       noRumah: document.getElementById('reg-norumah').value,
       catatanLokasi: document.getElementById('reg-catatan').value,
-      setoranAwal: document.getElementById('reg-setoran-awal').value || 0
+      setoranAwal: appState.adminRole ? (document.getElementById('reg-setoran-awal').value || 0) : 0,
+      adminRole: appState.adminRole
     };
 
     if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -237,7 +238,19 @@
     document.getElementById('fam-sponsor-name').value = sponsorNama;
     document.getElementById('fam-member-name').value = '';
     document.getElementById('fam-pin-akses').value = '';
-    document.getElementById('fam-setoran-awal').value = '';
+    var famInp = document.getElementById('fam-setoran-awal');
+    if (famInp) famInp.value = '';
+
+    var famSetor = document.getElementById('container-fam-setoran-awal');
+    var famNotice = document.getElementById('notice-fam-setoran-public');
+    if (appState.adminRole) {
+      if (famSetor) famSetor.classList.remove('hidden');
+      if (famNotice) famNotice.classList.add('hidden');
+    } else {
+      if (famSetor) famSetor.classList.add('hidden');
+      if (famNotice) famNotice.classList.remove('hidden');
+    }
+
     openModal('modal-family');
   }
 
@@ -251,7 +264,8 @@
       pinAkses: document.getElementById('fam-pin-akses').value,
       namaAnggota: document.getElementById('fam-member-name').value,
       hubungan: document.getElementById('fam-relation').value,
-      setoranAwal: document.getElementById('fam-setoran-awal').value || 0
+      setoranAwal: appState.adminRole ? (document.getElementById('fam-setoran-awal').value || 0) : 0,
+      adminRole: appState.adminRole
     };
 
     if (typeof google !== 'undefined' && google.script && google.script.run) {
@@ -321,6 +335,17 @@
     document.getElementById('admin-swap-indicator').classList.remove('hidden');
     document.getElementById('btn-admin-print-bus').classList.remove('hidden');
 
+    // Tampilkan field input nominal tabungan khusus mode Admin / Super Admin
+    var regSetor = document.getElementById('container-reg-setoran-awal');
+    var regNotice = document.getElementById('notice-reg-setoran-public');
+    if (regSetor) regSetor.classList.remove('hidden');
+    if (regNotice) regNotice.classList.add('hidden');
+
+    var famSetor = document.getElementById('container-fam-setoran-awal');
+    var famNotice = document.getElementById('notice-fam-setoran-public');
+    if (famSetor) famSetor.classList.remove('hidden');
+    if (famNotice) famNotice.classList.add('hidden');
+
     var btnAddRD = document.getElementById('btn-admin-add-rundown');
     var btnAddKT = document.getElementById('btn-admin-add-kontak');
     if (btnAddRD) btnAddRD.classList.remove('hidden');
@@ -341,7 +366,18 @@
     document.getElementById('admin-badge').classList.add('hidden');
     document.getElementById('admin-swap-indicator').classList.add('hidden');
     document.getElementById('btn-admin-print-bus').classList.add('hidden');
-    
+
+    // Sembunyikan field input nominal tabungan untuk warga publik
+    var regSetor = document.getElementById('container-reg-setoran-awal');
+    var regNotice = document.getElementById('notice-reg-setoran-public');
+    if (regSetor) regSetor.classList.add('hidden');
+    if (regNotice) regNotice.classList.remove('hidden');
+
+    var famSetor = document.getElementById('container-fam-setoran-awal');
+    var famNotice = document.getElementById('notice-fam-setoran-public');
+    if (famSetor) famSetor.classList.add('hidden');
+    if (famNotice) famNotice.classList.remove('hidden');
+
     var btnAddRD = document.getElementById('btn-admin-add-rundown');
     var btnAddKT = document.getElementById('btn-admin-add-kontak');
     if (btnAddRD) btnAddRD.classList.add('hidden');
