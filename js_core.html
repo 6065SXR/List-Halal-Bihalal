@@ -102,6 +102,54 @@
     }
   }
 
+  function switchTab(tabId) {
+    var tabs = [
+      { 
+        id: 'tab-form', 
+        btnId: 'nav-tab-form', 
+        activeClass: 'flex-1 py-2 px-1 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#EA6A9C] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2 px-1 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#EA6A9C] bg-pink-50 hover:bg-pink-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-pink-200/80 shadow-sm' 
+      },
+      { 
+        id: 'tab-list', 
+        btnId: 'nav-tab-list', 
+        activeClass: 'flex-1 py-2 px-1 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#5A56EC] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2 px-1 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#5A56EC] bg-indigo-50 hover:bg-indigo-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-indigo-200/80 shadow-sm' 
+      },
+      { 
+        id: 'tab-bus', 
+        btnId: 'nav-tab-bus', 
+        activeClass: 'flex-1 py-2 px-1 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#265768] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2 px-1 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#265768] bg-teal-50 hover:bg-teal-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-teal-200/80 shadow-sm' 
+      },
+      { 
+        id: 'tab-info', 
+        btnId: 'nav-tab-info', 
+        activeClass: 'flex-1 py-2 px-1 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-amber-500 text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2 px-1 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-amber-200/80 shadow-sm' 
+      }
+    ];
+
+    for (var i = 0; i < tabs.length; i++) {
+      var item = tabs[i];
+      var el = document.getElementById(item.id);
+      var btn = document.getElementById(item.btnId);
+      if (item.id === tabId) {
+        if (el) el.classList.remove('hidden');
+        if (btn) btn.className = item.activeClass;
+      } else {
+        if (el) el.classList.add('hidden');
+        if (btn) btn.className = item.inactiveClass;
+      }
+    }
+    if (tabId === 'tab-bus') {
+      renderBusSeats();
+    }
+    if (tabId === 'tab-info') {
+      renderInfoTab();
+    }
+  }
+
   function findSeatInfoForPeserta(idOrName) {
     if (!appState.seats || appState.seats.length === 0) return '-';
     var found = appState.seats.find(function(s) {
@@ -328,6 +376,15 @@
     var target = document.getElementById(id);
     if (target) {
       target.classList.remove('hidden');
+      setTimeout(function() {
+        if (id === 'modal-login') {
+          var pinInp = document.getElementById('admin-pin-input');
+          if (pinInp) pinInp.focus();
+        } else if (id === 'modal-family') {
+          var famPin = document.getElementById('fam-pin-akses');
+          if (famPin) famPin.focus();
+        }
+      }, 100);
     }
   }
 
