@@ -6,160 +6,438 @@
     renderInfoTab();
   }
 
-  function switchTab(tabId) {
-    var tabs = [
-      { 
-        id: 'tab-form', 
-        btnId: 'nav-tab-form', 
-        activeClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#EA6A9C] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
-        inactiveClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#EA6A9C] bg-pink-50 hover:bg-pink-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-pink-200/80 shadow-sm' 
-      },
-      { 
-        id: 'tab-list', 
-        btnId: 'nav-tab-list', 
-        activeClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#5A56EC] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
-        inactiveClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#5A56EC] bg-indigo-50 hover:bg-indigo-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-indigo-200/80 shadow-sm' 
-      },
-      { 
-        id: 'tab-bus', 
-        btnId: 'nav-tab-bus', 
-        activeClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#265768] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
-        inactiveClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#265768] bg-teal-50 hover:bg-teal-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-teal-200/80 shadow-sm' 
-      },
-      { 
-        id: 'tab-info', 
-        btnId: 'nav-tab-info', 
-        activeClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-amber-500 text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
-        inactiveClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-amber-200/80 shadow-sm' 
-      }
-    ];
+  function renderStats() {
+    var stats = appState.stats || {};
+    var totalWargaEl = document.getElementById('stat-total-warga');
+    var bus1El = document.getElementById('stat-kursi-bus1');
+    var bus2El = document.getElementById('stat-kursi-bus2');
+    var tabunganEl = document.getElementById('stat-total-tabungan');
 
-    for (var i = 0; i < tabs.length; i++) {
-      var item = tabs[i];
-      var el = document.getElementById(item.id);
-      var btn = document.getElementById(item.btnId);
-      if (item.id === tabId) {
-        if (el) el.classList.remove('hidden');
-        if (btn) btn.className = item.activeClass;
-      } else {
-        if (el) el.classList.add('hidden');
-        if (btn) btn.className = item.inactiveClass;
-      }
-    }
-    if (tabId === 'tab-bus') {
-      renderBusSeats();
-    }
-    if (tabId === 'tab-info') {
-      renderInfoTab();
-    }
+    if (totalWargaEl) totalWargaEl.textContent = stats.totalWarga || 0;
+    if (bus1El) bus1El.textContent = (stats.kursiTerisiBus1 || 0) + ' / 33';
+    if (bus2El) bus2El.textContent = (stats.kursiTerisiBus2 || 0) + ' / 33';
+    if (tabunganEl) tabunganEl.textContent = 'Rp ' + (stats.totalTabungan || 0).toLocaleString('id-ID');
+
+    var b1Badge = document.getElementById('badge-bus1-count');
+    var b2Badge = document.getElementById('badge-bus2-count');
+    if (b1Badge) b1Badge.textContent = '(' + (stats.kursiTerisiBus1 || 0) + '/33)';
+    if (b2Badge) b2Badge.textContent = '(' + (stats.kursiTerisiBus2 || 0) + '/33)';
   }
 
-  function renderStats() {
-    var s = appState.stats || {};
-    document.getElementById('stat-total-warga').textContent = s.totalWarga || 0;
-    document.getElementById('stat-kursi-bus1').textContent = (s.kursiTerisiBus1 || 0) + ' / 33';
-    document.getElementById('stat-kursi-bus2').textContent = (s.kursiTerisiBus2 || 0) + ' / 33';
-    
-    var totalTab = s.totalTabungan || 0;
-    document.getElementById('stat-total-tabungan').textContent = 'Rp ' + totalTab.toLocaleString('id-ID');
+  function handleSearchInput() {
+    var input = document.getElementById('search-input');
+    var clearBtn = document.getElementById('btn-clear-search');
+    if (!input) return;
 
-    document.getElementById('badge-bus1-count').textContent = '(' + (s.kursiTerisiBus1 || 0) + '/33)';
-    document.getElementById('badge-bus2-count').textContent = '(' + (s.kursiTerisiBus2 || 0) + '/33)';
+    appState.searchQuery = input.value.trim().toLowerCase();
+    if (clearBtn) {
+      if (appState.searchQuery.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+    }
+    loadDataFromBackend();
+  }
+
+  function clearSearchInput() {
+    var input = document.getElementById('search-input');
+    var clearBtn = document.getElementById('btn-clear-search');
+    if (input) input.value = '';
+    if (clearBtn) clearBtn.classList.add('hidden');
+    appState.searchQuery = '';
+    loadDataFromBackend();
+  }
+
+  function setFilterStatus(status) {
+    appState.currentFilter = status;
+    var btns = document.querySelectorAll('.filter-btn');
+    btns.forEach(function(btn) {
+      if (btn.getAttribute('data-status') === status) {
+        btn.className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-[#1E2238] text-white';
+      } else {
+        btn.className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200';
+      }
+    });
+    loadDataFromBackend();
   }
 
   function renderParticipantList() {
     var container = document.getElementById('participant-list-container');
-    var list = appState.peserta;
+    if (!container) return;
 
-    if (!list || list.length === 0) {
-      container.innerHTML = '<div class="card-modern p-10 text-center text-gray-400 text-sm">Tidak ada peserta yang cocok dengan pencarian.</div>';
+    if (!appState.peserta || appState.peserta.length === 0) {
+      container.innerHTML = '<div class="card-modern p-8 text-center text-gray-400 text-xs font-semibold">' +
+        'Tidak ada data peserta yang cocok dengan kriteria pencarian / filter.' +
+      '</div>';
       return;
     }
 
     var html = '';
-    for (var i = 0; i < list.length; i++) {
-      var p = list[i];
+    for (var i = 0; i < appState.peserta.length; i++) {
+      var p = appState.peserta[i];
+      var totalFamilyTab = p.jumlahTabungan || 0;
+      var familyCount = 1 + (p.familyMembers ? p.familyMembers.length : 0);
+      var mainSeat = findSeatInfoForPeserta(p.id);
 
-      var totalTabunganKeluarga = p.jumlahTabungan || 0;
       if (p.familyMembers && p.familyMembers.length > 0) {
         for (var f = 0; f < p.familyMembers.length; f++) {
-          totalTabunganKeluarga += (p.familyMembers[f].jumlahTabungan || 0);
+          totalFamilyTab += (p.familyMembers[f].jumlahTabungan || 0);
         }
       }
 
-      var hasTabungan = totalTabunganKeluarga > 0;
-      var badgeBg = hasTabungan ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-gray-100 text-gray-500 border border-gray-200';
-
-      var famHtml = '';
-      if (p.familyMembers && p.familyMembers.length > 0) {
-        famHtml += '<div class="mt-3 pt-2.5 border-t border-gray-100 space-y-1.5">';
-        famHtml += '<p class="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Anggota Keluarga Terdaftar:</p>';
-        for (var fm = 0; fm < p.familyMembers.length; fm++) {
-          var mem = p.familyMembers[fm];
-          famHtml += '<div class="flex items-center justify-between bg-gray-50/80 px-3 py-1.5 rounded-xl text-xs">';
-          famHtml += '  <div class="flex items-center gap-2">';
-          famHtml += '    <span class="w-1.5 h-1.5 rounded-full bg-[#5A56EC]"></span>';
-          famHtml += '    <span class="font-bold text-[#1E2238]">' + escapeHtml(mem.nama) + '</span>';
-          famHtml += '    <span class="text-gray-400 text-[11px]">(' + escapeHtml(mem.hubungan) + ')</span>';
-          famHtml += '  </div>';
-          famHtml += '</div>';
-        }
-        famHtml += '</div>';
-      }
-
-      var adminActionsHtml = '';
-      if (appState.adminRole) {
-        adminActionsHtml += '<div class="flex items-center gap-2 mt-3 pt-2.5 border-t border-gray-100">';
-        adminActionsHtml += '  <button onclick="openTabunganModal(\'' + p.id + '\', \'' + escapeHtml(p.nama) + '\', ' + totalTabunganKeluarga + ', \'' + escapeHtml(p.noWhatsapp || '') + '\')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">';
-        adminActionsHtml += '    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>';
-        adminActionsHtml += '    <span>Setor / Log Tabungan</span>';
-        adminActionsHtml += '  </button>';
-        adminActionsHtml += '  <button onclick="deleteParticipantProcess(\'' + p.id + '\')" class="px-3 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl text-xs font-bold transition">Hapus</button>';
-        adminActionsHtml += '</div>';
-      }
-
-      html += '<div class="card-modern p-4 md:p-5">';
-      html += '  <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">';
-      html += '    <div class="flex items-start gap-3">';
-      html += '      <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#FF7EB3] to-[#EA6A9C] text-white font-black flex items-center justify-center text-sm shadow-md shadow-pink-500/10 flex-shrink-0">' + p.nama.charAt(0).toUpperCase() + '</div>';
-      html += '      <div>';
-      html += '        <div class="flex items-center gap-2">';
-      html += '          <h3 class="font-extrabold text-[#1E2238] text-sm md:text-base">' + escapeHtml(p.nama) + '</h3>';
-      html += '          <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 font-bold">' + p.id + '</span>';
-      html += '        </div>';
-      html += '        <p class="text-xs text-gray-500 mt-0.5 font-medium">' + escapeHtml(p.noRumah) + ' • <span class="text-gray-400">' + escapeHtml(p.catatanLokasi) + '</span> • <span class="text-[#5A56EC] font-bold">WA: ' + escapeHtml(p.noWhatsapp || '-') + '</span></p>';
+      html += '<div class="card-modern p-5 md:p-6 space-y-4 hover:border-pink-200 transition-all shadow-sm">';
+      
+      // Header Card Utama
+      html += '<div class="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-gray-100">';
+      html += '  <div class="flex items-start gap-3">';
+      html += '    <div class="w-10 h-10 rounded-2xl bg-pink-100 text-[#EA6A9C] flex items-center justify-center font-black text-sm flex-shrink-0 mt-0.5">🏡</div>';
+      html += '    <div>';
+      html += '      <div class="flex items-center gap-2 flex-wrap">';
+      html += '        <h3 class="text-base font-extrabold text-[#1E2238]">' + escapeHtml(p.nama) + '</h3>';
+      html += '        <span class="px-2 py-0.5 bg-pink-50 text-[#EA6A9C] text-[10px] font-extrabold rounded-md">Kepala Keluarga</span>';
+      html += '        <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-mono font-bold rounded-md">' + escapeHtml(p.id) + '</span>';
       html += '      </div>';
-      html += '    </div>';
-      html += '    <div class="flex items-center gap-2 self-start md:self-auto">';
-      html += '      <button onclick="openTabunganModal(\'' + p.id + '\', \'' + escapeHtml(p.nama) + '\', ' + totalTabunganKeluarga + ', \'' + escapeHtml(p.noWhatsapp || '') + '\')" class="px-3 py-1 rounded-full text-xs font-extrabold ' + badgeBg + ' flex items-center gap-1.5 hover:opacity-90 transition shadow-sm">';
-      html += '        <span>Tabungan: Rp ' + totalTabunganKeluarga.toLocaleString('id-ID') + '</span>';
-      html += '      </button>';
-      html += '      <button onclick="openAddFamilyModal(\'' + p.id + '\', \'' + escapeHtml(p.nama) + '\')" class="btn-action bg-[#5A56EC] hover:bg-[#4844d1] text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm">';
-      html += '        <span>+ Keluarga</span>';
-      html += '      </button>';
+      html += '      <p class="text-xs text-gray-500 mt-0.5 font-medium">' + escapeHtml(p.noRumah) + ' • Alamat: ' + escapeHtml(p.alamat) + '</p>';
+      if (p.catatanLokasi) {
+        html += '      <p class="text-[11px] text-gray-400 italic">Patokan: ' + escapeHtml(p.catatanLokasi) + '</p>';
+      }
       html += '    </div>';
       html += '  </div>';
-      html += famHtml;
-      html += adminActionsHtml;
+
+      // Badge Tabungan & Kursi
+      html += '  <div class="flex flex-wrap items-center gap-2 self-start md:self-auto">';
+      html += '    <span class="px-3 py-1 bg-indigo-50 text-[#5A56EC] text-xs font-extrabold rounded-xl border border-indigo-100">🚌 ' + escapeHtml(mainSeat) + '</span>';
+      html += '    <span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-extrabold rounded-xl border border-emerald-100">💰 Rp ' + totalFamilyTab.toLocaleString('id-ID') + '</span>';
+      html += '  </div>';
+      html += '</div>';
+
+      // Action Buttons
+      html += '<div class="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">';
+      html += '  <div class="flex items-center gap-2 flex-wrap">';
+      html += '    <button onclick="openAddFamilyModal(\'' + p.id + '\', \'' + escapeHtml(p.nama) + '\')" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-[#5A56EC] font-bold rounded-xl border border-indigo-200 transition flex items-center gap-1.5 shadow-sm">';
+      html += '      <span>+ Tambah Anggota</span>';
+      html += '    </button>';
+      html += '    <button onclick="openTabunganModal(\'' + p.id + '\')" class="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl border border-emerald-200 transition flex items-center gap-1.5 shadow-sm">';
+      html += '      <span>💰 Log Tabungan</span>';
+      html += '    </button>';
+      html += '  </div>';
+
+      if (appState.adminRole) {
+        html += '  <button onclick="deleteParticipantProcess(\'' + p.id + '\')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl transition border border-rose-200 text-xs">';
+        html += '    🗑️ Hapus KK & Anggota';
+        html += '  </button>';
+      }
+      html += '</div>';
+
+      // List Sub-Anggota Keluarga jika ada
+      if (p.familyMembers && p.familyMembers.length > 0) {
+        html += '<div class="mt-3 pt-3 border-t border-gray-100 space-y-2 bg-gray-50/70 p-3.5 rounded-2xl border">';
+        html += '  <p class="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider">Anggota Rombongan Keluarga (' + p.familyMembers.length + ' orang):</p>';
+        
+        for (var k = 0; k < p.familyMembers.length; k++) {
+          var sub = p.familyMembers[k];
+          var subSeat = findSeatInfoForPeserta(sub.id);
+
+          html += '  <div class="bg-white p-2.5 rounded-xl border border-gray-200/80 flex items-center justify-between text-xs shadow-sm">';
+          html += '    <div class="flex items-center gap-2">';
+          html += '      <span class="w-2 h-2 rounded-full bg-[#EA6A9C]"></span>';
+          html += '      <span class="font-bold text-[#1E2238]">' + escapeHtml(sub.nama) + '</span>';
+          html += '      <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded-md text-[10px] font-semibold">' + escapeHtml(sub.hubungan) + '</span>';
+          html += '    </div>';
+          
+          html += '    <div class="flex items-center gap-2">';
+          html += '      <span class="text-[11px] font-bold text-[#5A56EC]">🚌 ' + escapeHtml(subSeat) + '</span>';
+          if (sub.jumlahTabungan > 0) {
+            html += '      <span class="text-[11px] font-extrabold text-emerald-600">💰 Rp ' + (sub.jumlahTabungan || 0).toLocaleString('id-ID') + '</span>';
+          }
+          if (appState.adminRole) {
+            html += '      <button onclick="openTabunganModal(\'' + sub.id + '\')" title="Input Tabungan Sub" class="px-2 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-[10px] font-bold">Setor</button>';
+          }
+          html += '    </div>';
+          html += '  </div>';
+        }
+        html += '</div>';
+      }
+
       html += '</div>';
     }
 
     container.innerHTML = html;
   }
 
+  function openTabunganModal(pesertaId) {
+    var pObj = null;
+    for (var i = 0; i < appState.peserta.length; i++) {
+      if (appState.peserta[i].id === pesertaId) {
+        pObj = appState.peserta[i];
+        break;
+      }
+      if (appState.peserta[i].familyMembers) {
+        for (var f = 0; f < appState.peserta[i].familyMembers.length; f++) {
+          if (appState.peserta[i].familyMembers[f].id === pesertaId) {
+            pObj = appState.peserta[i].familyMembers[f];
+            break;
+          }
+        }
+      }
+    }
+
+    if (!pObj) return;
+
+    appState.activeTabunganPeserta = pObj;
+    document.getElementById('tabungan-modal-nama').textContent = pObj.nama;
+    document.getElementById('tabungan-modal-id').textContent = pObj.id;
+    document.getElementById('tabungan-modal-total').textContent = 'Rp ' + (pObj.jumlahTabungan || 0).toLocaleString('id-ID');
+    
+    var adminForm = document.getElementById('admin-setor-form-container');
+    if (adminForm) {
+      if (appState.adminRole) {
+        adminForm.classList.remove('hidden');
+      } else {
+        adminForm.classList.add('hidden');
+      }
+    }
+
+    var inp = document.getElementById('input-setoran-nominal');
+    if (inp) inp.value = '';
+
+    loadTabunganLogs(pObj.id);
+    openModal('modal-tabungan');
+  }
+
+  function loadTabunganLogs(idTransaksi) {
+    var container = document.getElementById('tabungan-log-history');
+    if (container) container.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Memuat riwayat...</div>';
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(renderTabunganLogHistory)
+        .withFailureHandler(function(err) {
+          if (container) container.innerHTML = '<div class="text-center py-4 text-xs text-rose-500">Gagal memuat log</div>';
+        })
+        .getTabunganLog(idTransaksi);
+    } else {
+      var dummyLogs = {
+        success: true,
+        logs: [
+          { idLog: 'LOG-0001', tanggal: '15/09/2026 19:18:30', idTransaksi: idTransaksi, nominalSetoran: 70000, totalTabungan: 120000, adminPenyetor: 'Super Admin' },
+          { idLog: 'LOG-0002', tanggal: '15/09/2026 19:17:43', idTransaksi: idTransaksi, nominalSetoran: 50000, totalTabungan: 50000, adminPenyetor: 'Super Admin' }
+        ]
+      };
+      renderTabunganLogHistory(dummyLogs);
+    }
+  }
+
+  function renderTabunganLogHistory(res) {
+    var container = document.getElementById('tabungan-log-history');
+    if (!container) return;
+
+    if (!res || !res.success || !res.logs || res.logs.length === 0) {
+      container.innerHTML = '<div class="text-center py-4 text-xs text-gray-400 font-medium">Belum ada riwayat setoran tabungan.</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < res.logs.length; i++) {
+      var log = res.logs[i];
+      var nominalFormat = 'Rp ' + (log.nominalSetoran || 0).toLocaleString('id-ID');
+
+      html += '<div class="bg-gray-50 border border-gray-100 p-3.5 rounded-2xl flex items-center justify-between transition hover:bg-gray-100/80 shadow-sm">' +
+                '<div>' +
+                  '<p class="font-extrabold text-[#1E2238] text-xs">Setor: ' + nominalFormat + '</p>' +
+                  '<p class="text-[10px] text-gray-400 mt-0.5 font-medium">' + escapeHtml(log.tanggal) + ' • tabungan telah di bayar ke PANITIA</p>' +
+                '</div>' +
+              '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function submitTabunganDeposit() {
+    if (!appState.activeTabunganPeserta) return;
+    var inp = document.getElementById('input-setoran-nominal');
+    var nominal = parseInt(inp ? inp.value : 0, 10);
+
+    if (isNaN(nominal) || nominal <= 0) {
+      showToast('Masukkan nominal setoran yang valid', 'error');
+      return;
+    }
+
+    var btn = document.getElementById('btn-submit-setor');
+    if (btn) btn.disabled = true;
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (btn) btn.disabled = false;
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            if (inp) inp.value = '';
+            document.getElementById('tabungan-modal-total').textContent = 'Rp ' + res.totalTabungan.toLocaleString('id-ID');
+            loadTabunganLogs(appState.activeTabunganPeserta.id);
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menambah setoran', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (btn) btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .addTabunganDeposit(appState.activeTabunganPeserta.id, nominal, appState.adminRole);
+    } else {
+      if (btn) btn.disabled = false;
+      showToast('Setoran Rp ' + nominal.toLocaleString('id-ID') + ' ditambahkan (Preview)', 'success');
+      if (inp) inp.value = '';
+      loadTabunganLogs(appState.activeTabunganPeserta.id);
+    }
+  }
+
+  function openRekapWargaModal() {
+    renderRekapWargaTable();
+    openModal('modal-rekap-warga');
+  }
+
+  function renderRekapWargaTable() {
+    var tbody = document.getElementById('rekap-warga-table-body');
+    var tfoot = document.getElementById('rekap-warga-table-foot');
+    if (!tbody) return;
+
+    if (!appState.peserta || appState.peserta.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-400">Tidak ada data warga.</td></tr>';
+      if (tfoot) tfoot.innerHTML = '';
+      return;
+    }
+
+    var html = '';
+    var counter = 1;
+    var totalSeluruhPeserta = 0;
+
+    for (var i = 0; i < appState.peserta.length; i++) {
+      var head = appState.peserta[i];
+      var familyBg = (i % 2 === 0) ? 'bg-white' : 'bg-pink-50/30';
+      var headSeat = findSeatInfoForPeserta(head.id);
+      totalSeluruhPeserta++;
+
+      html += '<tr class="' + familyBg + ' hover:bg-pink-100/40 transition-colors border-b border-gray-100">' +
+                '<td class="p-2.5 text-center font-mono font-bold text-gray-500 border-r border-gray-200">' + counter++ + '</td>' +
+                '<td class="p-2.5 font-extrabold text-[#1E2238] border-r border-gray-200">' + escapeHtml(head.nama) + '</td>' +
+                '<td class="p-2.5 font-bold text-gray-800 border-r border-gray-200">' + escapeHtml(head.nama) + '</td>' +
+                '<td class="p-2.5 border-r border-gray-200"><span class="px-2 py-0.5 bg-pink-100 text-[#EA6A9C] rounded font-extrabold text-[10px]">Kepala Keluarga</span></td>' +
+                '<td class="p-2.5 text-center font-bold text-gray-700 border-r border-gray-200">' + escapeHtml(head.noRumah) + '</td>' +
+                '<td class="p-2.5 text-center font-mono text-xs border-r border-gray-200">' + escapeHtml(head.noWhatsapp) + '</td>' +
+                '<td class="p-2.5 text-center font-extrabold text-[#5A56EC]">' + escapeHtml(headSeat) + '</td>' +
+              '</tr>';
+
+      if (head.familyMembers && head.familyMembers.length > 0) {
+        for (var f = 0; f < head.familyMembers.length; f++) {
+          var sub = head.familyMembers[f];
+          var subSeat = findSeatInfoForPeserta(sub.id);
+          totalSeluruhPeserta++;
+
+          html += '<tr class="' + familyBg + ' hover:bg-pink-100/40 transition-colors border-b border-gray-100">' +
+                    '<td class="p-2.5 text-center font-mono text-gray-400 border-r border-gray-200">' + counter++ + '</td>' +
+                    '<td class="p-2.5 text-gray-400 text-[11px] border-r border-gray-200">└ ' + escapeHtml(head.nama) + '</td>' +
+                    '<td class="p-2.5 font-medium text-gray-700 border-r border-gray-200 pl-5">↳ ' + escapeHtml(sub.nama) + '</td>' +
+                    '<td class="p-2.5 border-r border-gray-200"><span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-semibold">' + escapeHtml(sub.hubungan) + '</span></td>' +
+                    '<td class="p-2.5 text-center text-gray-500 border-r border-gray-200">' + escapeHtml(head.noRumah) + '</td>' +
+                    '<td class="p-2.5 text-center font-mono text-xs text-gray-400 border-r border-gray-200">' + escapeHtml(head.noWhatsapp) + '</td>' +
+                    '<td class="p-2.5 text-center font-bold text-[#5A56EC]">' + escapeHtml(subSeat) + '</td>' +
+                  '</tr>';
+        }
+      }
+    }
+
+    tbody.innerHTML = html;
+    if (tfoot) {
+      tfoot.innerHTML = '<tr>' +
+                          '<td colspan="3" class="p-3 text-right uppercase tracking-wider text-xs">Total Seluruh Peserta:</td>' +
+                          '<td colspan="4" class="p-3 text-left font-black text-[#EA6A9C] text-sm">' + totalSeluruhPeserta + ' Warga Rombongan</td>' +
+                        '</tr>';
+    }
+  }
+
+  function openRekapTabunganModal() {
+    renderRekapTabunganTable();
+    openModal('modal-rekap-tabungan');
+  }
+
+  function renderRekapTabunganTable() {
+    var tbody = document.getElementById('rekap-tabungan-table-body');
+    var tfoot = document.getElementById('rekap-tabungan-table-foot');
+    if (!tbody) return;
+
+    if (!appState.peserta || appState.peserta.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-400">Tidak ada data tabungan.</td></tr>';
+      if (tfoot) tfoot.innerHTML = '';
+      return;
+    }
+
+    var html = '';
+    var counter = 1;
+    var totalGrandTabungan = 0;
+
+    for (var i = 0; i < appState.peserta.length; i++) {
+      var head = appState.peserta[i];
+      var familyBg = (i % 2 === 0) ? 'bg-white' : 'bg-emerald-50/30';
+      
+      var totalFamTab = head.jumlahTabungan || 0;
+      if (head.familyMembers && head.familyMembers.length > 0) {
+        for (var f = 0; f < head.familyMembers.length; f++) {
+          totalFamTab += (head.familyMembers[f].jumlahTabungan || 0);
+        }
+      }
+      totalGrandTabungan += totalFamTab;
+
+      html += '<tr class="' + familyBg + ' hover:bg-emerald-100/40 transition-colors border-b border-gray-100">' +
+                '<td class="p-2.5 text-center font-mono font-bold text-gray-500 border-r border-gray-200">' + counter++ + '</td>' +
+                '<td class="p-2.5 font-extrabold text-[#1E2238] border-r border-gray-200">' + escapeHtml(head.nama) + '</td>' +
+                '<td class="p-2.5 font-bold text-gray-800 border-r border-gray-200">' + escapeHtml(head.nama) + '</td>' +
+                '<td class="p-2.5 border-r border-gray-200"><span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded font-extrabold text-[10px]">Kepala Keluarga</span></td>' +
+                '<td class="p-2.5 text-center font-bold text-gray-700 border-r border-gray-200">' + escapeHtml(head.noRumah) + '</td>' +
+                '<td class="p-2.5 text-right font-mono font-bold text-emerald-700 border-r border-gray-200">Rp ' + (head.jumlahTabungan || 0).toLocaleString('id-ID') + '</td>' +
+                '<td class="p-2.5 text-right font-mono font-black text-emerald-800 bg-emerald-100/40">Rp ' + totalFamTab.toLocaleString('id-ID') + '</td>' +
+              '</tr>';
+
+      if (head.familyMembers && head.familyMembers.length > 0) {
+        for (var k = 0; k < head.familyMembers.length; k++) {
+          var sub = head.familyMembers[k];
+          html += '<tr class="' + familyBg + ' hover:bg-emerald-100/40 transition-colors border-b border-gray-100">' +
+                    '<td class="p-2.5 text-center font-mono text-gray-400 border-r border-gray-200">' + counter++ + '</td>' +
+                    '<td class="p-2.5 text-gray-400 text-[11px] border-r border-gray-200">└ ' + escapeHtml(head.nama) + '</td>' +
+                    '<td class="p-2.5 font-medium text-gray-700 border-r border-gray-200 pl-5">↳ ' + escapeHtml(sub.nama) + '</td>' +
+                    '<td class="p-2.5 border-r border-gray-200"><span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-semibold">' + escapeHtml(sub.hubungan) + '</span></td>' +
+                    '<td class="p-2.5 text-center text-gray-500 border-r border-gray-200">' + escapeHtml(head.noRumah) + '</td>' +
+                    '<td class="p-2.5 text-right font-mono text-emerald-600 border-r border-gray-200">Rp ' + (sub.jumlahTabungan || 0).toLocaleString('id-ID') + '</td>' +
+                    '<td class="p-2.5 text-right font-mono text-gray-400 bg-emerald-100/20 text-[11px]">-</td>' +
+                  '</tr>';
+        }
+      }
+    }
+
+    tbody.innerHTML = html;
+    if (tfoot) {
+      tfoot.innerHTML = '<tr>' +
+                          '<td colspan="5" class="p-3 text-right uppercase tracking-wider text-xs">Total Seluruh Tabungan Warga:</td>' +
+                          '<td colspan="2" class="p-3 text-right font-black text-emerald-800 text-base">Rp ' + totalGrandTabungan.toLocaleString('id-ID') + '</td>' +
+                        '</tr>';
+    }
+  }
+
   function switchBusView(busId) {
     appState.currentBusId = busId;
-    document.getElementById('current-bus-title-tag').textContent = busId.toUpperCase() + ' (MEDIUM 33 SEAT)';
-
     var btn1 = document.getElementById('btn-bus-1');
     var btn2 = document.getElementById('btn-bus-2');
+    var tag = document.getElementById('current-bus-title-tag');
 
     if (busId === 'Bus 1') {
-      btn1.className = 'flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition bg-[#5A56EC] text-white shadow-sm';
-      btn2.className = 'flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900';
+      if (btn1) btn1.className = 'flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition bg-[#5A56EC] text-white shadow-sm';
+      if (btn2) btn2.className = 'flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900';
+      if (tag) tag.textContent = 'BUS 1 (MEDIUM 33 SEAT)';
     } else {
-      btn2.className = 'flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition bg-[#5A56EC] text-white shadow-sm';
-      btn1.className = 'flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900';
+      if (btn1) btn1.className = 'flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition text-gray-600 hover:text-gray-900';
+      if (btn2) btn2.className = 'flex-1 md:flex-initial px-5 py-2 rounded-xl text-xs font-bold transition bg-[#265768] text-white shadow-sm';
+      if (tag) tag.textContent = 'BUS 2 (MEDIUM 33 SEAT)';
     }
 
     renderBusSeats();
@@ -168,136 +446,132 @@
   function renderBusSeats() {
     var rowsContainer = document.getElementById('bus-rows-container');
     var row8Container = document.getElementById('bus-row-8-container');
-    
-    var allSeats = appState.seats || [];
-    var seats = allSeats.filter(function(x) { return x.idBus === appState.currentBusId; });
+    if (!rowsContainer || !row8Container) return;
 
-    var rowsMap = {};
-    for (var s = 0; s < seats.length; s++) {
-      var item = seats[s];
-      if (!rowsMap[item.baris]) rowsMap[item.baris] = [];
-      rowsMap[item.baris].push(item);
-    }
+    var currentBusSeats = (appState.seats || []).filter(function(s) {
+      return s.idBus === appState.currentBusId;
+    });
 
     var rowsHtml = '';
     for (var r = 1; r <= 7; r++) {
-      var currentSeats = rowsMap[r] || [];
-      
-      var seat1 = currentSeats[0] || { idBus: appState.currentBusId, noKursi: ('0' + ((r-1)*4+1)).slice(-2) };
-      var seat2 = currentSeats[1] || { idBus: appState.currentBusId, noKursi: ('0' + ((r-1)*4+2)).slice(-2) };
-      var seat3 = currentSeats[2] || { idBus: appState.currentBusId, noKursi: ('0' + ((r-1)*4+3)).slice(-2) };
-      var seat4 = currentSeats[3] || { idBus: appState.currentBusId, noKursi: ('0' + ((r-1)*4+4)).slice(-2) };
+      var rowSeats = currentBusSeats.filter(function(s) { return s.baris === r; });
+      rowSeats.sort(function(a, b) { return parseInt(a.noKursi, 10) - parseInt(b.noKursi, 10); });
 
-      rowsHtml += '<div class="flex items-center gap-2 md:gap-3">';
-      rowsHtml += '  <div class="grid grid-cols-2 gap-1.5 md:gap-2 w-5/12">';
-      rowsHtml += renderSingleSeatCard(seat1);
-      rowsHtml += renderSingleSeatCard(seat2);
-      rowsHtml += '  </div>';
-      rowsHtml += '  <div class="w-2/12 text-center text-[10px] md:text-xs font-extrabold text-gray-400 tracking-wider">Baris ' + r + '</div>';
-      rowsHtml += '  <div class="grid grid-cols-2 gap-1.5 md:gap-2 w-5/12">';
-      rowsHtml += renderSingleSeatCard(seat3);
-      rowsHtml += renderSingleSeatCard(seat4);
-      rowsHtml += '  </div>';
+      var s1 = rowSeats[0] || { noKursi: String((r-1)*4 + 1) };
+      var s2 = rowSeats[1] || { noKursi: String((r-1)*4 + 2) };
+      var s3 = rowSeats[2] || { noKursi: String((r-1)*4 + 3) };
+      var s4 = rowSeats[3] || { noKursi: String((r-1)*4 + 4) };
+
+      rowsHtml += '<div class="grid grid-cols-11 gap-1 md:gap-2 items-center text-center text-xs font-bold">';
+      rowsHtml += buildSeatButtonHtml(s1, 'col-span-2');
+      rowsHtml += buildSeatButtonHtml(s2, 'col-span-2');
+      rowsHtml += '<div class="col-span-3 text-[10px] text-gray-400 font-semibold tracking-widest uppercase">Baris ' + r + '</div>';
+      rowsHtml += buildSeatButtonHtml(s3, 'col-span-2');
+      rowsHtml += buildSeatButtonHtml(s4, 'col-span-2');
       rowsHtml += '</div>';
     }
     rowsContainer.innerHTML = rowsHtml;
 
-    var row8Seats = rowsMap[8] || [];
+    var row8Seats = currentBusSeats.filter(function(s) { return s.baris === 8; });
+    row8Seats.sort(function(a, b) { return parseInt(a.noKursi, 10) - parseInt(b.noKursi, 10); });
+
     var row8Html = '';
-    for (var b = 0; b < row8Seats.length; b++) {
-      row8Html += renderSingleSeatCard(row8Seats[b]);
+    for (var b = 0; b < 5; b++) {
+      var s8 = row8Seats[b] || { noKursi: String(29 + b) };
+      row8Html += buildSeatButtonHtml(s8, 'w-full');
     }
     row8Container.innerHTML = row8Html;
   }
 
-  function renderSingleSeatCard(seat) {
-    var isOccupied = (seat.namaTerisi && seat.namaTerisi.trim() !== '');
-    var isSelected = (appState.selectedSeatForSwap && appState.selectedSeatForSwap.busId === seat.idBus && appState.selectedSeatForSwap.seatNo === seat.noKursi);
-    
-    var bgClass = isOccupied ? 'bg-[#265768] text-white shadow-sm' : 'bg-white border-2 border-dashed border-gray-200 text-gray-400';
-    var selectClass = isSelected ? 'seat-selected-swap' : '';
-    var cursorClass = 'cursor-pointer hover:border-[#EA6A9C]';
-    var displayName = isOccupied ? escapeHtml(seat.namaTerisi) : 'Kosong';
+  function buildSeatButtonHtml(seat, colClass) {
+    var seatNoPadded = ('0' + seat.noKursi).slice(-2);
+    var isOccupied = seat.namaTerisi && seat.namaTerisi.trim() !== '';
+    var isSelectedForSwap = appState.selectedSeatForSwap &&
+                            appState.selectedSeatForSwap.idBus === seat.idBus &&
+                            appState.selectedSeatForSwap.noKursi === seat.noKursi;
 
-    var formattedSeatNo = ('0' + seat.noKursi).slice(-2);
-
-    var out = '';
-    out += '<div onclick="handleSeatClick(\'' + seat.idBus + '\', \'' + seat.noKursi + '\', \'' + escapeHtml(seat.namaTerisi || '') + '\')" class="card-seat p-1.5 text-center flex flex-col justify-between min-h-[64px] md:min-h-[68px] ' + bgClass + ' ' + selectClass + ' ' + cursorClass + '">';
-    out += '  <div class="flex items-center justify-between mb-0.5 pointer-events-none">';
-    out += '    <span class="text-[10px] md:text-xs font-black uppercase tracking-wider ' + (isOccupied ? 'text-pink-300' : 'text-gray-400') + '">' + formattedSeatNo + '</span>';
+    var bgStyle = 'bg-white border-2 border-gray-200 text-gray-400 hover:border-indigo-300';
     if (isOccupied) {
-      out += '    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>';
+      bgStyle = 'bg-[#265768] text-white border-2 border-[#1b3e4a] shadow-sm';
     }
-    out += '  </div>';
-    out += '  <div class="text-[10px] md:text-xs font-bold leading-tight break-words line-clamp-2 my-auto pointer-events-none">' + displayName + '</div>';
-    out += '</div>';
-    return out;
+    if (isSelectedForSwap) {
+      bgStyle = 'bg-[#EA6A9C] text-white border-2 border-pink-400 animate-pulse shadow-lg';
+    }
+
+    var cursorStyle = appState.adminRole ? 'cursor-pointer hover:scale-105 active:scale-95 transition-all' : 'cursor-default';
+
+    var clickAttr = appState.adminRole ? 'onclick="handleSeatClick(\'' + seat.idBus + '\', \'' + seat.noKursi + '\')"' : '';
+
+    var html = '<div ' + clickAttr + ' class="' + colClass + ' ' + bgStyle + ' ' + cursorStyle + ' p-2 md:p-2.5 rounded-2xl flex flex-col items-center justify-between min-h-[64px] relative overflow-hidden group" title="' + (isOccupied ? escapeHtml(seat.namaTerisi) : 'Kosong') + '">';
+    html += '  <div class="flex items-center justify-between w-full text-[10px] font-black opacity-80">';
+    html += '    <span>' + seatNoPadded + '</span>';
+    html += '    <span class="w-1.5 h-1.5 rounded-full ' + (isOccupied ? 'bg-emerald-400' : 'bg-gray-300') + '"></span>';
+    html += '  </div>';
+    html += '  <span class="text-[11px] font-extrabold truncate w-full mt-1 text-center leading-tight">' + (isOccupied ? escapeHtml(seat.namaTerisi) : 'Kosong') + '</span>';
+    html += '</div>';
+
+    return html;
   }
 
-  function handleSeatClick(busId, seatNo, namaTerisi) {
-    var formattedNo = ('0' + seatNo).slice(-2);
-    if (!appState.adminRole) {
-      if (namaTerisi && namaTerisi.trim() !== '') {
-        showToast('🚍 Kursi ' + busId + ' (' + formattedNo + '): ' + namaTerisi, 'info');
-      } else {
-        showToast('🚍 Kursi ' + busId + ' (' + formattedNo + ') masih KOSONG.', 'info');
-      }
-      return;
-    }
+  function handleSeatClick(busId, noKursi) {
+    if (!appState.adminRole) return;
 
     if (!appState.selectedSeatForSwap) {
-      appState.selectedSeatForSwap = { busId: busId, seatNo: seatNo };
-      showToast('Kursi (' + busId + ' - ' + formattedNo + ') dipilih. Klik kursi lain untuk swap.', 'info');
+      appState.selectedSeatForSwap = { idBus: busId, noKursi: noKursi };
+      showToast('Pilih kursi kedua untuk menukar posisi kursi (' + busId + ' - ' + noKursi + ')', 'info');
       renderBusSeats();
     } else {
-      if (appState.selectedSeatForSwap.busId === busId && appState.selectedSeatForSwap.seatNo === seatNo) {
+      var seatA = appState.selectedSeatForSwap;
+      var seatB = { idBus: busId, noKursi: noKursi };
+
+      if (seatA.idBus === seatB.idBus && seatA.noKursi === seatB.noKursi) {
         appState.selectedSeatForSwap = null;
-        showToast('Batal memilih kursi.', 'info');
+        showToast('Batal menukar kursi', 'info');
         renderBusSeats();
         return;
       }
 
-      var busA = appState.selectedSeatForSwap.busId;
-      var seatA = appState.selectedSeatForSwap.seatNo;
-      var busB = busId;
-      var seatB = seatNo;
-      appState.selectedSeatForSwap = null;
-
+      showToast('Menukar posisi kursi...', 'info');
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler(function(res) {
+            appState.selectedSeatForSwap = null;
             if (res && res.success) {
               showToast(res.message, 'success');
               loadDataFromBackend();
             } else {
-              showToast(res ? res.message : 'Gagal menukar kursi', 'error');
-              loadDataFromBackend();
+              showToast(res ? res.message : 'Gagal menukar', 'error');
+              renderBusSeats();
             }
           })
           .withFailureHandler(function(err) {
+            appState.selectedSeatForSwap = null;
             showToast('Error: ' + err.message, 'error');
-            loadDataFromBackend();
+            renderBusSeats();
           })
-          .swapBusSeats(busA, seatA, busB, seatB);
+          .swapBusSeats(seatA.idBus, seatA.noKursi, seatB.idBus, seatB.noKursi);
       } else {
-        showToast('Preview: Kursi (' + busA + ' - ' + seatA + ') & (' + busB + ' - ' + seatB + ') ditukar!', 'success');
+        appState.selectedSeatForSwap = null;
+        showToast('Preview: Kursi (' + seatA.noKursi + ') & (' + seatB.noKursi + ') ditukar!', 'success');
+        renderBusSeats();
       }
     }
   }
 
   function switchInfoHari(hari) {
     appState.currentInfoHari = hari;
-    document.getElementById('info-current-hari-label').textContent = hari.toUpperCase();
-
     var btn1 = document.getElementById('btn-info-hari1');
     var btn2 = document.getElementById('btn-info-hari2');
+    var label = document.getElementById('info-current-hari-label');
 
     if (hari === 'Hari 1') {
-      btn1.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition bg-[#5A56EC] text-white shadow-sm';
-      btn2.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition text-gray-600 hover:text-gray-900';
+      if (btn1) btn1.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition bg-[#5A56EC] text-white shadow-sm';
+      if (btn2) btn2.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition text-gray-600 hover:text-gray-900';
+      if (label) label.textContent = 'HARI KE-1';
     } else {
-      btn2.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition bg-[#5A56EC] text-white shadow-sm';
-      btn1.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition text-gray-600 hover:text-gray-900';
+      if (btn1) btn1.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition text-gray-600 hover:text-gray-900';
+      if (btn2) btn2.className = 'px-4 py-2 rounded-xl text-xs font-extrabold transition bg-[#5A56EC] text-white shadow-sm';
+      if (label) label.textContent = 'HARI KE-2';
     }
 
     renderInfoTab();
@@ -312,492 +586,324 @@
     var container = document.getElementById('rundown-items-container');
     if (!container) return;
 
-    var currentHari = appState.currentInfoHari || 'Hari 1';
-    var filtered = (appState.rundownList || []).filter(function(item) {
-      return item.hari === currentHari;
+    var filtered = (appState.rundownList || []).filter(function(r) {
+      return r.hari === appState.currentInfoHari;
     });
 
-    if (!filtered || filtered.length === 0) {
-      container.innerHTML = '<div class="text-center py-6 text-gray-400">Belum ada agenda untuk ' + currentHari + '.</div>';
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="text-center py-6 text-gray-400 text-xs font-semibold">Belum ada agenda rundown untuk hari ini.</div>';
       return;
     }
 
     var html = '';
-
     for (var i = 0; i < filtered.length; i++) {
-      var rd = filtered[i];
-
-      html += '<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 md:p-4 rounded-2xl border border-gray-100 shadow-sm transition hover:shadow-md">';
-      html += '  <div class="flex items-start sm:items-center gap-3.5 flex-1 min-w-0">';
-      html += '    <span class="w-28 sm:w-36 flex-shrink-0 text-center font-extrabold text-[#EA6A9C] bg-pink-50 border border-pink-100 px-3 py-1.5 rounded-xl text-xs font-mono">' + escapeHtml(rd.jam) + '</span>';
-      html += '    <div class="min-w-0 flex-1 pl-1">';
-      html += '      <p class="font-bold text-[#1E2238] text-xs md:text-sm">' + escapeHtml(rd.judul) + '</p>';
-      html += '      <p class="text-gray-500 text-[11px] mt-0.5">' + escapeHtml(rd.keterangan || '-') + '</p>';
+      var item = filtered[i];
+      html += '<div class="bg-white p-3.5 md:p-4 rounded-2xl border border-gray-200/90 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-sm hover:border-indigo-200 transition">';
+      html += '  <div class="flex items-start gap-3">';
+      html += '    <span class="px-3 py-1 bg-indigo-50 text-[#5A56EC] font-black text-xs rounded-xl border border-indigo-100 flex-shrink-0 mt-0.5">' + escapeHtml(item.jam) + '</span>';
+      html += '    <div>';
+      html += '      <h4 class="font-extrabold text-[#1E2238] text-xs md:text-sm">' + escapeHtml(item.judul) + '</h4>';
+      if (item.keterangan) {
+        html += '      <p class="text-[11px] text-gray-500 mt-0.5 font-medium leading-relaxed">' + escapeHtml(item.keterangan) + '</p>';
+      }
       html += '    </div>';
       html += '  </div>';
 
       if (appState.adminRole) {
-        html += '  <div class="flex items-center gap-1.5 self-end sm:self-center flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-gray-100 w-full sm:w-auto justify-end">';
-        html += '    <button onclick="openRundownModal(\'' + rd.id + '\')" class="px-2.5 py-1 bg-indigo-50 text-[#5A56EC] hover:bg-indigo-100 rounded-lg text-[11px] font-bold transition">Edit</button>';
-        html += '    <button onclick="deleteRundownProcess(\'' + rd.id + '\')" class="px-2.5 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-[11px] font-bold transition">Hapus</button>';
+        html += '  <div class="flex items-center gap-1.5 self-end md:self-auto flex-shrink-0">';
+        html += '    <button onclick="openRundownModal(\'' + item.id + '\')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-[10px] font-bold">Edit</button>';
+        html += '    <button onclick="deleteRundownProcess(\'' + item.id + '\')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[10px] font-bold">Hapus</button>';
         html += '  </div>';
       }
-
       html += '</div>';
     }
-
     container.innerHTML = html;
+  }
+
+  function openRundownModal(id) {
+    var item = null;
+    if (id) {
+      item = (appState.rundownList || []).find(function(r) { return r.id === id; });
+    }
+
+    document.getElementById('rd-input-id').value = item ? item.id : '';
+    document.getElementById('rd-input-hari').value = item ? item.hari : appState.currentInfoHari;
+    document.getElementById('rd-input-jam').value = item ? item.jam : '';
+    document.getElementById('rd-input-judul').value = item ? item.judul : '';
+    document.getElementById('rd-input-keterangan').value = item ? item.keterangan : '';
+
+    document.getElementById('modal-rundown-title').textContent = item ? 'Edit Agenda Rundown' : 'Tambah Agenda Baru';
+    openModal('modal-rundown-crud');
+  }
+
+  function saveRundownProcess() {
+    var payload = {
+      id: document.getElementById('rd-input-id').value,
+      hari: document.getElementById('rd-input-hari').value,
+      jam: document.getElementById('rd-input-jam').value,
+      judul: document.getElementById('rd-input-judul').value,
+      keterangan: document.getElementById('rd-input-keterangan').value
+    };
+
+    var btn = document.getElementById('btn-save-rd');
+    if (btn) btn.disabled = true;
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (btn) btn.disabled = false;
+          if (res && res.success) {
+            closeModal('modal-rundown-crud');
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menyimpan', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (btn) btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .saveRundownItem(payload, appState.adminRole);
+    } else {
+      if (btn) btn.disabled = false;
+      closeModal('modal-rundown-crud');
+      showToast('Preview: Agenda berhasil disimpan', 'success');
+    }
+  }
+
+  function deleteRundownProcess(id) {
+    if (!confirm('Hapus agenda rundown ini?')) return;
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menghapus', 'error');
+          }
+        })
+        .deleteRundownItem(id, appState.adminRole);
+    } else {
+      showToast('Preview: Agenda dihapus', 'success');
+    }
   }
 
   function renderKontakList() {
     var container = document.getElementById('kontak-items-container');
     if (!container) return;
 
-    var list = appState.kontakList || [];
-    if (!list || list.length === 0) {
-      container.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Belum ada kontak panitia terdaftar.</div>';
+    if (!appState.kontakList || appState.kontakList.length === 0) {
+      container.innerHTML = '<div class="text-center py-4 text-xs text-gray-400 font-semibold">Belum ada kontak panitia.</div>';
       return;
     }
 
     var html = '';
-    for (var i = 0; i < list.length; i++) {
-      var kt = list[i];
-      var waClean = (kt.noWhatsapp || '').replace(/\D/g, '');
-      if (waClean.startsWith('0')) waClean = '62' + waClean.substring(1);
-      var waUrl = "https://wa.me/" + waClean;
+    for (var i = 0; i < appState.kontakList.length; i++) {
+      var item = appState.kontakList[i];
+      var cleanWa = String(item.noWhatsapp || '').replace(/\D/g, '');
+      if (cleanWa.indexOf('0') === 0) cleanWa = '62' + cleanWa.slice(1);
+      var waUrl = 'https://wa.me/' + cleanWa;
 
-      html += '<div class="flex items-center justify-between bg-white p-3 rounded-2xl border border-gray-100 shadow-sm text-xs">';
+      html += '<div class="bg-white p-3 rounded-2xl border border-gray-200/90 flex items-center justify-between shadow-sm hover:border-emerald-200 transition">';
       html += '  <div>';
-      html += '    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">' + escapeHtml(kt.jabatan) + '</p>';
-      html += '    <a href="' + waUrl + '" target="_blank" class="font-bold text-[#5A56EC] hover:underline text-xs flex items-center gap-1 mt-0.5">';
-      html += '      <span>' + escapeHtml(kt.nama) + ' (' + escapeHtml(kt.noWhatsapp) + ')</span>';
-      html += '    </a>';
+      html += '    <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">' + escapeHtml(item.jabatan) + '</span>';
+      html += '    <h5 class="text-xs font-extrabold text-[#1E2238]">' + escapeHtml(item.nama) + '</h5>';
+      html += '    <p class="text-[11px] font-mono text-gray-400">' + escapeHtml(item.noWhatsapp) + '</p>';
       html += '  </div>';
 
-      if (appState.adminRole) {
-        html += '  <div class="flex items-center gap-1.5">';
-        html += '    <button onclick="openKontakModal(\'' + kt.id + '\')" class="px-2 py-1 bg-indigo-50 text-[#5A56EC] hover:bg-indigo-100 rounded-lg text-[11px] font-bold transition">Edit</button>';
-        html += '    <button onclick="deleteKontakProcess(\'' + kt.id + '\')" class="px-2 py-1 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-lg text-[11px] font-bold transition">Hapus</button>';
-        html += '  </div>';
-      }
+      html += '  <div class="flex items-center gap-1.5">';
+      html += '    <a href="' + waUrl + '" target="_blank" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1 shadow-sm">';
+      html += '      <span>Hubungi WA</span>';
+      html += '    </a>';
 
+      if (appState.adminRole) {
+        html += '    <button onclick="openKontakModal(\'' + item.id + '\')" class="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold" title="Edit">✏️</button>';
+        html += '    <button onclick="deleteKontakProcess(\'' + item.id + '\')" class="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold" title="Hapus">🗑️</button>';
+      }
+      html += '  </div>';
       html += '</div>';
     }
-
     container.innerHTML = html;
   }
 
-  function openRekapWargaModal() {
-    var tbody = document.getElementById('rekap-warga-table-body');
-    var tfoot = document.getElementById('rekap-warga-table-foot');
-    if (!tbody) return;
-
-    var list = appState.peserta || [];
-    if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-400">Belum ada peserta terdaftar.</td></tr>';
-      tfoot.innerHTML = '';
-      openModal('modal-rekap-warga');
-      return;
-    }
-
-    var html = '';
-    var globalNo = 1;
-    var familyGroupIndex = 0;
-    var totalWargaCount = 0;
-
-    for (var i = 0; i < list.length; i++) {
-      var head = list[i];
-      var familyMembers = head.familyMembers || [];
-      var familyCount = 1 + familyMembers.length;
-      totalWargaCount += familyCount;
-
-      var bgClass = (familyGroupIndex % 2 === 0) ? 'bg-[#F2F4F8]' : 'bg-white';
-      var kkName = escapeHtml(head.nama);
-      var seatHead = findSeatInfoForPeserta(head.id || head.nama);
-
-      // Baris Kepala Keluarga (KK)
-      html += '<tr class="' + bgClass + ' hover:opacity-95 border-b border-gray-200/80 transition">';
-      html += '  <td class="p-2.5 text-center font-bold text-gray-500 border-r border-gray-200/60">' + (globalNo++) + '</td>';
-      html += '  <td class="p-2.5 font-extrabold text-[#1E2238] border-r border-gray-200/60">' + kkName + '</td>';
-      html += '  <td class="p-2.5 font-bold text-[#1E2238] border-r border-gray-200/60">' + kkName + '</td>';
-      html += '  <td class="p-2.5 border-r border-gray-200/60"><span class="px-2 py-0.5 rounded-md bg-pink-100 text-pink-700 font-extrabold text-[10px]">Kepala Keluarga</span></td>';
-      html += '  <td class="p-2.5 text-center border-r border-gray-200/60 font-semibold">' + escapeHtml(head.noRumah || '-') + '</td>';
-      html += '  <td class="p-2.5 text-center border-r border-gray-200/60 font-mono text-[#5A56EC] font-bold">' + escapeHtml(head.noWhatsapp || '-') + '</td>';
-      html += '  <td class="p-2.5 text-center font-extrabold text-indigo-600">' + seatHead + '</td>';
-      html += '</tr>';
-
-      // Baris Anggota Keluarga
-      for (var f = 0; f < familyMembers.length; f++) {
-        var sub = familyMembers[f];
-        var seatSub = findSeatInfoForPeserta(sub.id || sub.nama);
-        html += '<tr class="' + bgClass + ' hover:opacity-95 border-b border-gray-200/80 transition">';
-        html += '  <td class="p-2.5 text-center font-bold text-gray-400 border-r border-gray-200/60">' + (globalNo++) + '</td>';
-        html += '  <td class="p-2.5 text-gray-400 italic border-r border-gray-200/60 text-[11px]">' + kkName + '</td>';
-        html += '  <td class="p-2.5 font-bold text-gray-800 border-r border-gray-200/60 pl-5">└ ' + escapeHtml(sub.nama) + '</td>';
-        html += '  <td class="p-2.5 border-r border-gray-200/60"><span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-bold text-[10px]">' + escapeHtml(sub.hubungan || 'Anggota') + '</span></td>';
-        html += '  <td class="p-2.5 text-center border-r border-gray-200/60 text-gray-500">' + escapeHtml(head.noRumah || '-') + '</td>';
-        html += '  <td class="p-2.5 text-center border-r border-gray-200/60 font-mono text-gray-400 text-[11px]">' + escapeHtml(head.noWhatsapp || '-') + '</td>';
-        html += '  <td class="p-2.5 text-center font-bold text-indigo-500">' + seatSub + '</td>';
-        html += '</tr>';
-      }
-
-      familyGroupIndex++;
-    }
-
-    tbody.innerHTML = html;
-
-    var footHtml = '';
-    footHtml += '<tr class="bg-gray-200 font-black text-center text-xs text-[#1E2238] border-t-2 border-gray-400">';
-    footHtml += '  <td colspan="3" class="p-3 text-left uppercase tracking-wider">TOTAL MANIFEST PESERTA:</td>';
-    footHtml += '  <td colspan="4" class="p-3 text-right text-pink-600 font-extrabold text-sm">' + totalWargaCount + ' Peserta Terdaftar</td>';
-    footHtml += '</tr>';
-    tfoot.innerHTML = footHtml;
-
-    openModal('modal-rekap-warga');
-  }
-
-  function openRekapTabunganModal() {
-    var tbody = document.getElementById('rekap-tabungan-table-body');
-    var tfoot = document.getElementById('rekap-tabungan-table-foot');
-    if (!tbody) return;
-
-    var list = appState.peserta || [];
-    if (list.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-400">Belum ada data tabungan terdaftar.</td></tr>';
-      tfoot.innerHTML = '';
-      openModal('modal-rekap-tabungan');
-      return;
-    }
-
-    var html = '';
-    var globalNo = 1;
-    var familyGroupIndex = 0;
-    var grandTotalTabungan = 0;
-
-    for (var i = 0; i < list.length; i++) {
-      var head = list[i];
-      var familyMembers = head.familyMembers || [];
-
-      var totalFamilyTab = head.jumlahTabungan || 0;
-      for (var fCount = 0; fCount < familyMembers.length; fCount++) {
-        totalFamilyTab += (familyMembers[fCount].jumlahTabungan || 0);
-      }
-      grandTotalTabungan += totalFamilyTab;
-
-      var bgClass = (familyGroupIndex % 2 === 0) ? 'bg-[#F2F4F8]' : 'bg-white';
-      var kkName = escapeHtml(head.nama);
-      var headTabVal = head.jumlahTabungan || 0;
-
-      // Baris Kepala Keluarga (KK)
-      html += '<tr class="' + bgClass + ' hover:opacity-95 border-b border-gray-200/80 transition">';
-      html += '  <td class="p-2.5 text-center font-bold text-gray-500 border-r border-gray-200/60">' + (globalNo++) + '</td>';
-      html += '  <td class="p-2.5 font-extrabold text-[#1E2238] border-r border-gray-200/60">' + kkName + '</td>';
-      html += '  <td class="p-2.5 font-bold text-[#1E2238] border-r border-gray-200/60">' + kkName + '</td>';
-      html += '  <td class="p-2.5 border-r border-gray-200/60"><span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-extrabold text-[10px]">Kepala Keluarga</span></td>';
-      html += '  <td class="p-2.5 text-center border-r border-gray-200/60 font-semibold">' + escapeHtml(head.noRumah || '-') + '</td>';
-      html += '  <td class="p-2.5 text-right font-bold text-gray-800 border-r border-gray-200/60 font-mono">Rp ' + headTabVal.toLocaleString('id-ID') + '</td>';
-      html += '  <td class="p-2.5 text-right font-extrabold text-emerald-700 font-mono bg-emerald-50/50">Rp ' + totalFamilyTab.toLocaleString('id-ID') + '</td>';
-      html += '</tr>';
-
-      // Baris Anggota Keluarga
-      for (var f = 0; f < familyMembers.length; f++) {
-        var sub = familyMembers[f];
-        var subTabVal = sub.jumlahTabungan || 0;
-        html += '<tr class="' + bgClass + ' hover:opacity-95 border-b border-gray-200/80 transition">';
-        html += '  <td class="p-2.5 text-center font-bold text-gray-400 border-r border-gray-200/60">' + (globalNo++) + '</td>';
-        html += '  <td class="p-2.5 text-gray-400 italic border-r border-gray-200/60 text-[11px]">' + kkName + '</td>';
-        html += '  <td class="p-2.5 font-bold text-gray-800 border-r border-gray-200/60 pl-5">└ ' + escapeHtml(sub.nama) + '</td>';
-        html += '  <td class="p-2.5 border-r border-gray-200/60"><span class="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-600 font-bold text-[10px]">' + escapeHtml(sub.hubungan || 'Anggota') + '</span></td>';
-        html += '  <td class="p-2.5 text-center border-r border-gray-200/60 text-gray-500">' + escapeHtml(head.noRumah || '-') + '</td>';
-        html += '  <td class="p-2.5 text-right font-semibold text-gray-600 border-r border-gray-200/60 font-mono">Rp ' + subTabVal.toLocaleString('id-ID') + '</td>';
-        html += '  <td class="p-2.5 text-right text-gray-400 font-mono text-[11px] bg-emerald-50/30">-</td>';
-        html += '</tr>';
-      }
-
-      familyGroupIndex++;
-    }
-
-    tbody.innerHTML = html;
-
-    var footHtml = '';
-    footHtml += '<tr class="bg-emerald-100 font-black text-center text-xs text-emerald-950 border-t-2 border-emerald-400">';
-    footHtml += '  <td colspan="4" class="p-3 text-left uppercase tracking-wider">GRAND TOTAL TABUNGAN WARGA:</td>';
-    footHtml += '  <td colspan="3" class="p-3 text-right text-emerald-800 font-black text-sm font-mono">Rp ' + grandTotalTabungan.toLocaleString('id-ID') + '</td>';
-    footHtml += '</tr>';
-    tfoot.innerHTML = footHtml;
-
-    openModal('modal-rekap-tabungan');
-  }
-
-  function openTabunganModal(idTransaksi, namaPeserta, totalTabungan, noWhatsapp) {
-    appState.activeTabunganPeserta = { id: idTransaksi, nama: namaPeserta, total: totalTabungan, wa: noWhatsapp };
-    
-    document.getElementById('tabungan-modal-nama').textContent = namaPeserta;
-    document.getElementById('tabungan-modal-id').textContent = idTransaksi;
-    document.getElementById('tabungan-modal-total').textContent = 'Rp ' + (totalTabungan || 0).toLocaleString('id-ID');
-    document.getElementById('input-setoran-nominal').value = '';
-
-    var formContainer = document.getElementById('admin-setor-form-container');
-    if (appState.adminRole) {
-      formContainer.classList.remove('hidden');
-    } else {
-      formContainer.classList.add('hidden');
-    }
-
-    fetchTabunganLogs(idTransaksi);
-    openModal('modal-tabungan');
-  }
-
-  function fetchTabunganLogs(idTransaksi) {
-    var historyContainer = document.getElementById('tabungan-log-history');
-    historyContainer.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Memuat riwayat log keluarga...</div>';
-
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (res && res.success && res.logs) {
-            renderTabunganLogs(res.logs);
-          } else {
-            historyContainer.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Belum ada riwayat setoran.</div>';
-          }
-        })
-        .withFailureHandler(function(err) {
-          historyContainer.innerHTML = '<div class="text-center py-4 text-xs text-rose-500">Gagal memuat log.</div>';
-        })
-        .getTabunganLog(idTransaksi);
-    } else {
-      renderTabunganLogs([
-        { idLog: 'LOG-0002', tanggal: '12/09/2026 14:20:00', nominalSetoran: 300000, totalTabungan: 500000, adminPenyetor: 'Admin' },
-        { idLog: 'LOG-0001', tanggal: '10/09/2026 10:00:00', nominalSetoran: 200000, totalTabungan: 200000, adminPenyetor: 'Pendaftaran Awal' }
-      ]);
-    }
-  }
-
-  function renderTabunganLogs(logs) {
-    var historyContainer = document.getElementById('tabungan-log-history');
-    if (!logs || logs.length === 0) {
-      historyContainer.innerHTML = '<div class="text-center py-4 text-xs text-gray-400">Belum ada riwayat setoran.</div>';
-      return;
-    }
-
-    var html = '';
-    for (var i = 0; i < logs.length; i++) {
-      var l = logs[i];
-      var waReceiptMsg = encodeURIComponent(
-        "🧾 *KWITANSI SETORAN TABUNGAN HALAL BIHALAL*\n\n" +
-        "• *No. Log*: " + l.idLog + "\n" +
-        "• *ID Transaksi*: " + l.idTransaksi + "\n" +
-        "• *Nama*: " + l.namaPeserta + "\n" +
-        "• *Tanggal*: " + l.tanggal + "\n" +
-        "• *Nominal Setor*: Rp " + l.nominalSetoran.toLocaleString('id-ID') + "\n" +
-        "• *Total Saldo Tabungan*: Rp " + l.totalTabungan.toLocaleString('id-ID') + "\n\n" +
-        "Terima kasih atas setoran tabungannya! Pengurus RT."
-      );
-      var waReceiptUrl = "https://wa.me/" + (appState.activeTabunganPeserta.wa || appState.adminWaPhone) + "?text=" + waReceiptMsg;
-
-      html += '<div class="flex items-center justify-between bg-gray-50 border border-gray-100 p-3 rounded-xl text-xs">';
-      html += '  <div>';
-      html += '    <p class="font-extrabold text-[#1E2238]">Setor: Rp ' + l.nominalSetoran.toLocaleString('id-ID') + '</p>';
-      html += '    <p class="text-[10px] text-gray-400 mt-0.5">' + l.tanggal + ' • oleh <span class="font-bold text-gray-600">' + escapeHtml(l.adminPenyetor) + '</span></p>';
-      html += '  </div>';
-      html += '  <a href="' + waReceiptUrl + '" target="_blank" title="Kirim Kwitansi WA" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-[11px] font-bold flex items-center gap-1 transition border border-emerald-200">';
-      html += '    <span>📲 Kwitansi WA</span>';
-      html += '  </a>';
-      html += '</div>';
-    }
-    historyContainer.innerHTML = html;
-  }
-
-  function submitTabunganDeposit() {
-    if (!appState.activeTabunganPeserta) return;
-    var nominalInput = document.getElementById('input-setoran-nominal');
-    var nominalVal = parseInt(nominalInput.value, 10);
-
-    if (isNaN(nominalVal) || nominalVal <= 0) {
-      showToast('Masukkan nominal setoran tabungan yang valid!', 'error');
-      return;
-    }
-
-    var btn = document.getElementById('btn-submit-setor');
-    btn.disabled = true;
-    btn.textContent = 'Menyimpan...';
-
-    var targetId = appState.activeTabunganPeserta.id;
-
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(function(res) {
-          btn.disabled = false;
-          btn.textContent = 'Tambah Setoran';
-          if (res && res.success) {
-            showToast(res.message, 'success');
-            nominalInput.value = '';
-            appState.activeTabunganPeserta.total = res.totalTabungan;
-            document.getElementById('tabungan-modal-total').textContent = 'Rp ' + res.totalTabungan.toLocaleString('id-ID');
-            fetchTabunganLogs(targetId);
-            loadDataFromBackend();
-          } else {
-            showToast(res ? res.message : 'Gagal menambah setoran', 'error');
-          }
-        })
-        .withFailureHandler(function(err) {
-          btn.disabled = false;
-          btn.textContent = 'Tambah Setoran';
-          showToast('Error: ' + err.message, 'error');
-        })
-        .addTabunganDeposit(targetId, nominalVal, appState.adminRole);
-    } else {
-      setTimeout(function() {
-        btn.disabled = false;
-        btn.textContent = 'Tambah Setoran';
-        var newTotal = (appState.activeTabunganPeserta.total || 0) + nominalVal;
-        appState.activeTabunganPeserta.total = newTotal;
-        document.getElementById('tabungan-modal-total').textContent = 'Rp ' + newTotal.toLocaleString('id-ID');
-        nominalInput.value = '';
-        showToast('Preview: Setoran Rp ' + nominalVal.toLocaleString('id-ID') + ' ditambahkan!', 'success');
-        fetchTabunganLogs(targetId);
-      }, 300);
-    }
-  }
-
-  var searchTimer = null;
-  function handleSearchInput() {
-    var val = document.getElementById('search-input').value;
-    var btnClear = document.getElementById('btn-clear-search');
-    if (btnClear) {
-      if (val && val.trim().length > 0) {
-        btnClear.classList.remove('hidden');
-      } else {
-        btnClear.classList.add('hidden');
-      }
-    }
-    debounceSearch();
-  }
-
-  function clearSearchInput() {
-    var input = document.getElementById('search-input');
-    var btnClear = document.getElementById('btn-clear-search');
-    if (input) input.value = '';
-    if (btnClear) btnClear.classList.add('hidden');
-    appState.searchQuery = '';
-    loadDataFromBackend();
-  }
-
-  function debounceSearch() {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(function() {
-      appState.searchQuery = document.getElementById('search-input').value;
-      loadDataFromBackend();
-    }, 350);
-  }
-
-  function setFilterStatus(status) {
-    appState.currentFilter = status;
-    var btns = document.querySelectorAll('.filter-btn');
-    for (var i = 0; i < btns.length; i++) {
-      if (btns[i].getAttribute('data-status') === status) {
-        btns[i].className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-[#1E2238] text-[#FFFFFF]';
-      } else {
-        btns[i].className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200';
-      }
-    }
-    loadDataFromBackend();
-  }
-
-  function openRundownModal(id) {
-    var rd = (appState.rundownList || []).find(function(x) { return x.id === id; });
-    document.getElementById('rd-input-id').value = id || '';
-    document.getElementById('modal-rundown-title').textContent = id ? 'Edit Agenda Rundown' : 'Tambah Agenda Rundown Baru';
-    if (rd) {
-      document.getElementById('rd-input-hari').value = rd.hari || 'Hari 1';
-      document.getElementById('rd-input-jam').value = rd.jam || '';
-      document.getElementById('rd-input-judul').value = rd.judul || '';
-      document.getElementById('rd-input-keterangan').value = rd.keterangan || '';
-    } else {
-      document.getElementById('rd-input-hari').value = appState.currentInfoHari || 'Hari 1';
-      document.getElementById('rd-input-jam').value = '';
-      document.getElementById('rd-input-judul').value = '';
-      document.getElementById('rd-input-keterangan').value = '';
-    }
-    openModal('modal-rundown-crud');
-  }
-
-  function saveRundownProcess() {
-    var id = document.getElementById('rd-input-id').value;
-    var hari = document.getElementById('rd-input-hari').value;
-    var jam = document.getElementById('rd-input-jam').value;
-    var judul = document.getElementById('rd-input-judul').value;
-    var ket = document.getElementById('rd-input-keterangan').value;
-
-    if (!judul || !jam) {
-      showToast('Waktu dan Judul agenda wajib diisi!', 'error');
-      return;
-    }
-
-    if (id) {
-      var idx = appState.rundownList.findIndex(function(x) { return x.id === id; });
-      if (idx !== -1) {
-        appState.rundownList[idx] = { id: id, hari: hari, jam: jam, judul: judul, keterangan: ket };
-      }
-    } else {
-      var newId = 'RD-' + ('00' + (appState.rundownList.length + 1)).slice(-3);
-      appState.rundownList.push({ id: newId, hari: hari, jam: jam, judul: judul, keterangan: ket });
-    }
-    closeModal('modal-rundown-crud');
-    renderRundownList();
-    showToast('Agenda berhasil disimpan!', 'success');
-  }
-
-  function deleteRundownProcess(id) {
-    appState.rundownList = (appState.rundownList || []).filter(function(x) { return x.id !== id; });
-    renderRundownList();
-    showToast('Agenda berhasil dihapus', 'info');
-  }
-
   function openKontakModal(id) {
-    var kt = (appState.kontakList || []).find(function(x) { return x.id === id; });
-    document.getElementById('kt-input-id').value = id || '';
-    document.getElementById('modal-kontak-title').textContent = id ? 'Edit Kontak Panitia' : 'Tambah Kontak Panitia';
-    if (kt) {
-      document.getElementById('kt-input-jabatan').value = kt.jabatan || '';
-      document.getElementById('kt-input-nama').value = kt.nama || '';
-      document.getElementById('kt-input-whatsapp').value = kt.noWhatsapp || '';
-    } else {
-      document.getElementById('kt-input-jabatan').value = '';
-      document.getElementById('kt-input-nama').value = '';
-      document.getElementById('kt-input-whatsapp').value = '';
+    var item = null;
+    if (id) {
+      item = (appState.kontakList || []).find(function(k) { return k.id === id; });
     }
+
+    document.getElementById('kt-input-id').value = item ? item.id : '';
+    document.getElementById('kt-input-jabatan').value = item ? item.jabatan : '';
+    document.getElementById('kt-input-nama').value = item ? item.nama : '';
+    document.getElementById('kt-input-whatsapp').value = item ? item.noWhatsapp : '';
+
+    document.getElementById('modal-kontak-title').textContent = item ? 'Edit Kontak Panitia' : 'Tambah Kontak Baru';
     openModal('modal-kontak-crud');
   }
 
   function saveKontakProcess() {
-    var id = document.getElementById('kt-input-id').value;
-    var jab = document.getElementById('kt-input-jabatan').value;
-    var nama = document.getElementById('kt-input-nama').value;
-    var wa = document.getElementById('kt-input-whatsapp').value;
+    var payload = {
+      id: document.getElementById('kt-input-id').value,
+      jabatan: document.getElementById('kt-input-jabatan').value,
+      nama: document.getElementById('kt-input-nama').value,
+      noWhatsapp: document.getElementById('kt-input-whatsapp').value
+    };
 
-    if (!jab || !nama || !wa) {
-      showToast('Semua kolom kontak wajib diisi!', 'error');
-      return;
-    }
+    var btn = document.getElementById('btn-save-kt');
+    if (btn) btn.disabled = true;
 
-    if (id) {
-      var idx = appState.kontakList.findIndex(function(x) { return x.id === id; });
-      if (idx !== -1) {
-        appState.kontakList[idx] = { id: id, jabatan: jab, nama: nama, noWhatsapp: wa };
-      }
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (btn) btn.disabled = false;
+          if (res && res.success) {
+            closeModal('modal-kontak-crud');
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menyimpan kontak', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (btn) btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .savePanitiaContact(payload, appState.adminRole);
     } else {
-      var newId = 'KT-' + ('00' + (appState.kontakList.length + 1)).slice(-3);
-      appState.kontakList.push({ id: newId, jabatan: jab, nama: nama, noWhatsapp: wa });
+      if (btn) btn.disabled = false;
+      closeModal('modal-kontak-crud');
+      showToast('Preview: Kontak berhasil disimpan', 'success');
     }
-    closeModal('modal-kontak-crud');
-    renderKontakList();
-    showToast('Kontak berhasil disimpan!', 'success');
   }
 
   function deleteKontakProcess(id) {
-    appState.kontakList = (appState.kontakList || []).filter(function(x) { return x.id !== id; });
-    renderKontakList();
-    showToast('Kontak berhasil dihapus', 'info');
+    if (!confirm('Hapus kontak panitia ini?')) return;
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menghapus kontak', 'error');
+          }
+        })
+        .deletePanitiaContact(id, appState.adminRole);
+    } else {
+      showToast('Preview: Kontak dihapus', 'success');
+    }
+  }
+
+  function triggerBackupDatabase() {
+    showToast('Membuat cadangan database JSON...', 'info');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            var blob = new Blob([res.backupJson], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'BACKUP_DATABASE_HALAL_BIHALAL_' + new Date().toISOString().slice(0, 10) + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Backup JSON berhasil diunduh!', 'success');
+          } else {
+            showToast(res ? res.message : 'Gagal backup', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showToast('Error: ' + err.message, 'error');
+        })
+        .backupDatabase();
+    } else {
+      showToast('Preview Mode: Fitur Backup aktif di Apps Script', 'info');
+    }
+  }
+
+  function handleRestoreFileSelect(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById('input-restore-json').value = e.target.result;
+    };
+    reader.readAsText(file);
+  }
+
+  function triggerRestoreDatabase() {
+    var jsonStr = document.getElementById('input-restore-json').value.trim();
+    if (!jsonStr) {
+      showToast('Pilih file .json atau tempelkan data JSON dahulu', 'error');
+      return;
+    }
+
+    if (!confirm('Apakah Anda yakin ingin MEMULIHKAN SELURUH DATABASE dari file JSON ini? Seluruh data saat ini akan ditimpa!')) {
+      return;
+    }
+
+    var btn = document.getElementById('btn-submit-restore');
+    if (btn) btn.disabled = true;
+    showToast('Memulihkan database...', 'info');
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (btn) btn.disabled = false;
+          if (res && res.success) {
+            closeModal('modal-restore');
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal memulihkan database', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (btn) btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .restoreDatabase(jsonStr);
+    } else {
+      if (btn) btn.disabled = false;
+      closeModal('modal-restore');
+      showToast('Preview: Database berhasil dipulihkan', 'success');
+    }
+  }
+
+  function triggerClearAllDatabase() {
+    if (appState.adminRole !== 'Super Admin') {
+      showToast('Akses ditolak. Reset database khusus Super Admin!', 'error');
+      return;
+    }
+
+    var confirmMsg = '💥 PERINGATAN SUPER ADMIN! 💥\n\n' +
+      'Apakah Anda YAKIN ingin MENGHAPUS SEMUA DATABASE PESERTA, TABUNGAN, & KURSI BUS?\n\n' +
+      'Tindakan ini TIDAK DAPAT DIBATALKAN. Pastikan Anda sudah membuat BACKUP JSON terlebih dahulu!';
+
+    if (!confirm(confirmMsg)) return;
+
+    showToast('Mengosongkan seluruh database...', 'info');
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal reset database', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          showToast('Error: ' + err.message, 'error');
+        })
+        .clearAllDatabase(appState.adminRole);
+    } else {
+      showToast('Preview: Database berhasil dikosongkan', 'success');
+    }
   }
 </script>
