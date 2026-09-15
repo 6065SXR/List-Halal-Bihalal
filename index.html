@@ -122,22 +122,22 @@
     </div>
 
     <!-- MAIN NAVIGATION PILLS (COMPACT MULTICOLOR DISTINCT TABS FOR MOBILE) -->
-    <nav class="flex items-center justify-between p-1.5 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200/90 max-w-xl mx-auto shadow-md gap-1 md:gap-1.5">
-      <button id="nav-tab-form" onclick="switchTab('tab-form')" class="flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-[#EA6A9C] text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]">
-        <span>📝</span>
-        <span>Formulir</span>
+    <nav class="flex items-center justify-between p-2 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200/90 max-w-xl mx-auto shadow-lg gap-1.5">
+      <button id="nav-tab-form" onclick="switchTab('tab-form')" class="flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#EA6A9C] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]">
+        <span class="text-xl sm:text-base leading-none">📝</span>
+        <span class="text-[11px] sm:text-xs font-extrabold tracking-tight">Formulir</span>
       </button>
-      <button id="nav-tab-list" onclick="switchTab('tab-list')" class="flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-[#5A56EC] bg-indigo-50 hover:bg-indigo-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-indigo-200/80 shadow-sm">
-        <span>👥</span>
-        <span>Daftar Warga</span>
+      <button id="nav-tab-list" onclick="switchTab('tab-list')" class="flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#5A56EC] bg-indigo-50 hover:bg-indigo-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-indigo-200/80 shadow-sm">
+        <span class="text-xl sm:text-base leading-none">👥</span>
+        <span class="text-[11px] sm:text-xs font-bold tracking-tight">Daftar Warga</span>
       </button>
-      <button id="nav-tab-bus" onclick="switchTab('tab-bus')" class="flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-[#265768] bg-teal-50 hover:bg-teal-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-teal-200/80 shadow-sm">
-        <span>🚌</span>
-        <span>Denah Bus</span>
+      <button id="nav-tab-bus" onclick="switchTab('tab-bus')" class="flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#265768] bg-teal-50 hover:bg-teal-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-teal-200/80 shadow-sm">
+        <span class="text-xl sm:text-base leading-none">🚌</span>
+        <span class="text-[11px] sm:text-xs font-bold tracking-tight">Denah Bus</span>
       </button>
-      <button id="nav-tab-info" onclick="switchTab('tab-info')" class="flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-amber-200/80 shadow-sm">
-        <span>📍</span>
-        <span>Informasi</span>
+      <button id="nav-tab-info" onclick="switchTab('tab-info')" class="flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-amber-200/80 shadow-sm">
+        <span class="text-xl sm:text-base leading-none">📍</span>
+        <span class="text-[11px] sm:text-xs font-bold tracking-tight">Informasi</span>
       </button>
     </nav>
 
@@ -462,29 +462,30 @@
 
         <!-- Pratinjau Tampilan Header -->
         <div class="flex items-center justify-between pt-1">
-          <span class="text-[11px] font-extrabold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+          <span class="text-[11px] font-extrabold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
             <span>📱</span> PRATINJAU TAMPILAN DI IPHONE 16 PRO MAX
           </span>
-          <span class="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-md">
+          <span class="bg-pink-100 text-[#EA6A9C] text-[10px] font-extrabold px-2.5 py-0.5 rounded-md">
             Contoh Tampilan Hasil PIN
           </span>
         </div>
 
-        <!-- iPhone 16 Pro Mockup Frame -->
-        <div class="iphone-16-pro-frame max-w-[280px] mx-auto my-1">
+        <!-- iPhone 16 Pro Mockup Frame (Crisp High-Contrast Rendering) -->
+        <div class="iphone-16-pro-frame max-w-[300px] mx-auto my-1">
           <div class="iphone-dynamic-island"></div>
-          <div class="bg-white rounded-2xl p-4 text-center space-y-2">
-            <div class="w-9 h-9 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-inner">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          <div class="bg-white rounded-2xl p-4 text-center space-y-2.5 border border-gray-100 shadow-sm">
+            <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
             </div>
             <div>
-              <p class="text-xs font-black text-[#1E2238]">Pendaftaran Berhasil!</p>
-              <p class="text-[10px] text-gray-400 leading-tight mt-0.5">Simpan PIN Akses di bawah ini untuk menambahkan anggota keluarga Anda nanti.</p>
+              <p class="text-sm font-black text-[#1E2238]">Pendaftaran Berhasil!</p>
+              <p class="text-xs text-gray-700 font-medium leading-normal mt-1">Simpan PIN Akses di bawah ini untuk menambahkan anggota keluarga Anda nanti.</p>
             </div>
 
-            <div class="bg-pink-50 border border-pink-200 p-2.5 rounded-xl space-y-0.5">
-              <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">PIN AKSES WARGA ANDA</p>
-              <p class="text-xl font-black text-[#EA6A9C] tracking-widest font-mono">4 8 2 9</p>
+            <div class="bg-pink-50/90 border-2 border-pink-200/80 p-3 rounded-2xl space-y-1 relative overflow-hidden">
+              <p class="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">PIN AKSES WARGA ANDA</p>
+              <!-- Contoh angka PIN disensor / di-blur visual -->
+              <p class="text-2xl font-black text-[#EA6A9C] tracking-[0.2em] font-mono blur-[5px] select-none pointer-events-none">4 8 2 9</p>
             </div>
           </div>
         </div>
@@ -771,7 +772,7 @@
 
         <div>
           <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">PIN Akses Warga (4 Digit)</label>
-          <input type="password" id="fam-pin-akses" maxlength="4" required placeholder="Masukkan PIN 4-Digit" class="w-full input-modern text-center font-extrabold tracking-widest text-base text-[#1E2238]">
+          <input type="password" id="fam-pin-akses" inputmode="numeric" pattern="[0-9]*" maxlength="4" required placeholder="Masukkan PIN 4-Digit" class="w-full input-modern text-center font-extrabold tracking-widest text-base text-[#1E2238]">
         </div>
 
         <div>
@@ -847,7 +848,7 @@
       <form onsubmit="event.preventDefault(); submitAdminLogin();" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-[#1E2238] uppercase tracking-wider mb-1">PIN Rahasia Admin</label>
-          <input type="password" id="admin-pin-input" required placeholder="XXXX" class="w-full input-modern text-center text-lg font-bold tracking-widest text-[#1E2238]">
+          <input type="password" id="admin-pin-input" inputmode="numeric" pattern="[0-9]*" required placeholder="XXXX" class="w-full input-modern text-center text-lg font-bold tracking-widest text-[#1E2238]">
         </div>
 
         <div class="flex gap-2 pt-2">
