@@ -11,26 +11,26 @@
       { 
         id: 'tab-form', 
         btnId: 'nav-tab-form', 
-        activeClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-[#EA6A9C] text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
-        inactiveClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-[#EA6A9C] bg-pink-50 hover:bg-pink-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-pink-200/80 shadow-sm' 
+        activeClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#EA6A9C] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#EA6A9C] bg-pink-50 hover:bg-pink-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-pink-200/80 shadow-sm' 
       },
       { 
         id: 'tab-list', 
         btnId: 'nav-tab-list', 
-        activeClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-[#5A56EC] text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
-        inactiveClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-[#5A56EC] bg-indigo-50 hover:bg-indigo-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-indigo-200/80 shadow-sm' 
+        activeClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#5A56EC] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#5A56EC] bg-indigo-50 hover:bg-indigo-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-indigo-200/80 shadow-sm' 
       },
       { 
         id: 'tab-bus', 
         btnId: 'nav-tab-bus', 
-        activeClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-[#265768] text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
-        inactiveClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-[#265768] bg-teal-50 hover:bg-teal-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-teal-200/80 shadow-sm' 
+        activeClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-[#265768] text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-[#265768] bg-teal-50 hover:bg-teal-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-teal-200/80 shadow-sm' 
       },
       { 
         id: 'tab-info', 
         btnId: 'nav-tab-info', 
-        activeClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-extrabold transition-all bg-amber-500 text-white shadow-md flex items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
-        inactiveClass: 'flex-1 py-2 px-1.5 sm:px-2.5 rounded-xl text-[11px] sm:text-xs md:text-sm font-bold transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 flex items-center justify-center gap-1 sm:gap-1.5 border border-amber-200/80 shadow-sm' 
+        activeClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-extrabold transition-all bg-amber-500 text-white shadow-md flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 scale-[1.02]', 
+        inactiveClass: 'flex-1 py-2.5 px-1.5 sm:px-3 rounded-2xl text-xs md:text-sm font-bold transition-all text-amber-700 bg-amber-50 hover:bg-amber-100 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 border border-amber-200/80 shadow-sm' 
       }
     ];
 
@@ -702,5 +702,102 @@
       }
     }
     loadDataFromBackend();
+  }
+
+  function openRundownModal(id) {
+    var rd = (appState.rundownList || []).find(function(x) { return x.id === id; });
+    document.getElementById('rd-input-id').value = id || '';
+    document.getElementById('modal-rundown-title').textContent = id ? 'Edit Agenda Rundown' : 'Tambah Agenda Rundown Baru';
+    if (rd) {
+      document.getElementById('rd-input-hari').value = rd.hari || 'Hari 1';
+      document.getElementById('rd-input-jam').value = rd.jam || '';
+      document.getElementById('rd-input-judul').value = rd.judul || '';
+      document.getElementById('rd-input-keterangan').value = rd.keterangan || '';
+    } else {
+      document.getElementById('rd-input-hari').value = appState.currentInfoHari || 'Hari 1';
+      document.getElementById('rd-input-jam').value = '';
+      document.getElementById('rd-input-judul').value = '';
+      document.getElementById('rd-input-keterangan').value = '';
+    }
+    openModal('modal-rundown-crud');
+  }
+
+  function saveRundownProcess() {
+    var id = document.getElementById('rd-input-id').value;
+    var hari = document.getElementById('rd-input-hari').value;
+    var jam = document.getElementById('rd-input-jam').value;
+    var judul = document.getElementById('rd-input-judul').value;
+    var ket = document.getElementById('rd-input-keterangan').value;
+
+    if (!judul || !jam) {
+      showToast('Waktu dan Judul agenda wajib diisi!', 'error');
+      return;
+    }
+
+    if (id) {
+      var idx = appState.rundownList.findIndex(function(x) { return x.id === id; });
+      if (idx !== -1) {
+        appState.rundownList[idx] = { id: id, hari: hari, jam: jam, judul: judul, keterangan: ket };
+      }
+    } else {
+      var newId = 'RD-' + ('00' + (appState.rundownList.length + 1)).slice(-3);
+      appState.rundownList.push({ id: newId, hari: hari, jam: jam, judul: judul, keterangan: ket });
+    }
+    closeModal('modal-rundown-crud');
+    renderRundownList();
+    showToast('Agenda berhasil disimpan!', 'success');
+  }
+
+  function deleteRundownProcess(id) {
+    appState.rundownList = (appState.rundownList || []).filter(function(x) { return x.id !== id; });
+    renderRundownList();
+    showToast('Agenda berhasil dihapus', 'info');
+  }
+
+  function openKontakModal(id) {
+    var kt = (appState.kontakList || []).find(function(x) { return x.id === id; });
+    document.getElementById('kt-input-id').value = id || '';
+    document.getElementById('modal-kontak-title').textContent = id ? 'Edit Kontak Panitia' : 'Tambah Kontak Panitia';
+    if (kt) {
+      document.getElementById('kt-input-jabatan').value = kt.jabatan || '';
+      document.getElementById('kt-input-nama').value = kt.nama || '';
+      document.getElementById('kt-input-whatsapp').value = kt.noWhatsapp || '';
+    } else {
+      document.getElementById('kt-input-jabatan').value = '';
+      document.getElementById('kt-input-nama').value = '';
+      document.getElementById('kt-input-whatsapp').value = '';
+    }
+    openModal('modal-kontak-crud');
+  }
+
+  function saveKontakProcess() {
+    var id = document.getElementById('kt-input-id').value;
+    var jab = document.getElementById('kt-input-jabatan').value;
+    var nama = document.getElementById('kt-input-nama').value;
+    var wa = document.getElementById('kt-input-whatsapp').value;
+
+    if (!jab || !nama || !wa) {
+      showToast('Semua kolom kontak wajib diisi!', 'error');
+      return;
+    }
+
+    if (id) {
+      var idx = appState.kontakList.findIndex(function(x) { return x.id === id; });
+      if (idx !== -1) {
+        appState.kontakList[idx] = { id: id, jabatan: jab, nama: nama, noWhatsapp: wa };
+      }
+    } else {
+      var newId = 'KT-' + ('00' + (appState.kontakList.length + 1)).slice(-3);
+      appState.kontakList.push({ id: newId, jabatan: jab, nama: nama, noWhatsapp: wa });
+    }
+    closeModal('modal-kontak-crud');
+    renderKontakList();
+    showToast('Kontak berhasil disimpan!', 'success');
+  }
+
+  function deleteKontakProcess(id) {
+    appState.kontakList = (appState.kontakList || []).filter(function(x) { return x.id !== id; });
+    renderKontakList();
+    showToast('Kontak berhasil dihapus', 'info');
   }
 </script>
