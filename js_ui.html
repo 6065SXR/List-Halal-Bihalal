@@ -9,19 +9,25 @@
   function renderStats() {
     var stats = appState.stats || {};
     var totalWargaEl = document.getElementById('stat-total-warga');
-    var bus1El = document.getElementById('stat-kursi-bus1');
-    var bus2El = document.getElementById('stat-kursi-bus2');
+    var busTotalEl = document.getElementById('stat-kursi-bus-total');
+    var busDetailEl = document.getElementById('stat-kursi-bus-detail');
     var tabunganEl = document.getElementById('stat-total-tabungan');
+    var sumbanganEl = document.getElementById('stat-total-sumbangan');
+
+    var bus1Count = stats.kursiTerisiBus1 || 0;
+    var bus2Count = stats.kursiTerisiBus2 || 0;
+    var totalBusCount = bus1Count + bus2Count;
 
     if (totalWargaEl) totalWargaEl.textContent = stats.totalWarga || 0;
-    if (bus1El) bus1El.textContent = (stats.kursiTerisiBus1 || 0) + ' / 33';
-    if (bus2El) bus2El.textContent = (stats.kursiTerisiBus2 || 0) + ' / 33';
+    if (busTotalEl) busTotalEl.textContent = totalBusCount + ' / 66';
+    if (busDetailEl) busDetailEl.textContent = 'B1: ' + bus1Count + '/33 • B2: ' + bus2Count + '/33';
     if (tabunganEl) tabunganEl.textContent = 'Rp ' + (stats.totalTabungan || 0).toLocaleString('id-ID');
+    if (sumbanganEl) sumbanganEl.textContent = 'Rp ' + (stats.totalSumbangan || 0).toLocaleString('id-ID');
 
     var b1Badge = document.getElementById('badge-bus1-count');
     var b2Badge = document.getElementById('badge-bus2-count');
-    if (b1Badge) b1Badge.textContent = '(' + (stats.kursiTerisiBus1 || 0) + '/33)';
-    if (b2Badge) b2Badge.textContent = '(' + (stats.kursiTerisiBus2 || 0) + '/33)';
+    if (b1Badge) b1Badge.textContent = '(' + bus1Count + '/33)';
+    if (b2Badge) b2Badge.textContent = '(' + bus2Count + '/33)';
   }
 
   function handleSearchInput() {
@@ -54,7 +60,7 @@
     var btns = document.querySelectorAll('.filter-btn');
     btns.forEach(function(btn) {
       if (btn.getAttribute('data-status') === status) {
-        btn.className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-[#1E2238] text-white';
+        btn.className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-[#1E2238] text-[#FFFFFF]';
       } else {
         btn.className = 'filter-btn px-3 py-2 rounded-xl text-xs font-bold bg-white text-gray-600 border border-gray-200';
       }
@@ -424,6 +430,65 @@
     }
   }
 
+  function openRekapSumbanganModal() {
+    renderRekapSumbanganTable();
+    openModal('modal-rekap-sumbangan');
+  }
+
+  function renderRekapSumbanganTable() {
+    var tbody = document.getElementById('rekap-sumbangan-table-body');
+    var tfoot = document.getElementById('rekap-sumbangan-table-foot');
+    if (!tbody) return;
+
+    var adminCols = document.querySelectorAll('.admin-action-col');
+    adminCols.forEach(function(col) {
+      if (appState.adminRole) {
+        col.classList.remove('hidden');
+      } else {
+        col.classList.add('hidden');
+      }
+    });
+
+    if (!appState.sumbanganList || appState.sumbanganList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-400">Belum ada catatan dana sumbangan / donatur.</td></tr>';
+      if (tfoot) tfoot.innerHTML = '';
+      return;
+    }
+
+    var html = '';
+    var totalGrandSumbangan = 0;
+
+    for (var i = 0; i < appState.sumbanganList.length; i++) {
+      var smb = appState.sumbanganList[i];
+      var bgClass = (i % 2 === 0) ? 'bg-white' : 'bg-amber-50/40';
+      var nominalVal = smb.nominal || 0;
+      totalGrandSumbangan += nominalVal;
+
+      html += '<tr class="' + bgClass + ' hover:bg-amber-100/40 transition-colors border-b border-gray-100">' +
+                '<td class="p-2.5 text-center font-mono font-bold text-gray-500 border-r border-gray-200">' + (i + 1) + '</td>' +
+                '<td class="p-2.5 font-mono text-[11px] text-gray-500 border-r border-gray-200">' + escapeHtml(smb.tanggal) + '</td>' +
+                '<td class="p-2.5 font-extrabold text-[#1E2238] border-r border-gray-200">' + escapeHtml(smb.namaDonatur) + '</td>' +
+                '<td class="p-2.5 text-gray-600 border-r border-gray-200">' + escapeHtml(smb.keterangan || '-') + '</td>' +
+                '<td class="p-2.5 text-right font-mono font-black text-amber-700 border-r border-gray-200">Rp ' + nominalVal.toLocaleString('id-ID') + '</td>';
+
+      if (appState.adminRole) {
+        html += '<td class="p-2 text-center">' +
+                  '<button onclick="deleteSumbanganProcess(\'' + smb.id + '\')" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-[10px] font-bold">Hapus</button>' +
+                '</td>';
+      }
+
+      html += '</tr>';
+    }
+
+    tbody.innerHTML = html;
+    if (tfoot) {
+      tfoot.innerHTML = '<tr>' +
+                          '<td colspan="4" class="p-3 text-right uppercase tracking-wider text-xs font-extrabold">Total Dana Sumbangan Acara:</td>' +
+                          '<td colspan="' + (appState.adminRole ? 2 : 1) + '" class="p-3 text-right font-black text-amber-800 text-base">Rp ' + totalGrandSumbangan.toLocaleString('id-ID') + '</td>' +
+                        '</tr>';
+    }
+  }
+
   function switchBusView(busId) {
     appState.currentBusId = busId;
     var btn1 = document.getElementById('btn-bus-1');
@@ -498,9 +563,8 @@
       bgStyle = 'bg-[#EA6A9C] text-white border-2 border-pink-400 animate-pulse shadow-lg';
     }
 
-    var cursorStyle = appState.adminRole ? 'cursor-pointer hover:scale-105 active:scale-95 transition-all' : 'cursor-default';
-
-    var clickAttr = appState.adminRole ? 'onclick="handleSeatClick(\'' + seat.idBus + '\', \'' + seat.noKursi + '\')"' : '';
+    var cursorStyle = 'cursor-pointer hover:scale-105 active:scale-95 transition-all';
+    var clickAttr = 'onclick="handleSeatClick(\'' + seat.idBus + '\', \'' + seat.noKursi + '\')"';
 
     var html = '<div ' + clickAttr + ' class="' + colClass + ' ' + bgStyle + ' ' + cursorStyle + ' p-2 md:p-2.5 rounded-2xl flex flex-col items-center justify-between min-h-[64px] relative overflow-hidden group" title="' + (isOccupied ? escapeHtml(seat.namaTerisi) : 'Kosong') + '">';
     html += '  <div class="flex items-center justify-between w-full text-[10px] font-black opacity-80">';
@@ -514,13 +578,7 @@
   }
 
   function handleSeatClick(busId, noKursi) {
-    if (!appState.adminRole) return;
-
-    if (!appState.selectedSeatForSwap) {
-      appState.selectedSeatForSwap = { idBus: busId, noKursi: noKursi };
-      showToast('Pilih kursi kedua untuk menukar posisi kursi (' + busId + ' - ' + noKursi + ')', 'info');
-      renderBusSeats();
-    } else {
+    if (appState.adminRole && appState.selectedSeatForSwap) {
       var seatA = appState.selectedSeatForSwap;
       var seatB = { idBus: busId, noKursi: noKursi };
 
@@ -555,7 +613,66 @@
         showToast('Preview: Kursi (' + seatA.noKursi + ') & (' + seatB.noKursi + ') ditukar!', 'success');
         renderBusSeats();
       }
+      return;
     }
+
+    openSeatDetailModal(busId, noKursi);
+  }
+
+  function openSeatDetailModal(busId, noKursi) {
+    var seat = (appState.seats || []).find(function(s) {
+      return s.idBus === busId && String(s.noKursi) === String(noKursi);
+    });
+
+    var seatNoPadded = ('0' + noKursi).slice(-2);
+    var seatCodeStr = busId + ' (' + seatNoPadded + ')';
+    
+    var isOccupied = seat && seat.namaTerisi && seat.namaTerisi.trim() !== '';
+    var namaTerisi = isOccupied ? seat.namaTerisi : '';
+
+    var titleEl = document.getElementById('seat-modal-title');
+    var badgeEl = document.getElementById('seat-modal-code');
+    var bodyOccupied = document.getElementById('seat-modal-body-occupied');
+    var bodyEmpty = document.getElementById('seat-modal-body-empty');
+    var nameEl = document.getElementById('seat-modal-passenger-name');
+    var emptyMsgEl = document.getElementById('seat-modal-empty-msg');
+    var waBtn = document.getElementById('seat-modal-wa-btn');
+    var adminSwapBtn = document.getElementById('seat-modal-admin-swap-btn');
+
+    if (badgeEl) badgeEl.textContent = seatCodeStr;
+
+    if (isOccupied) {
+      if (titleEl) titleEl.textContent = 'Detail Pemegang Kursi';
+      if (bodyOccupied) bodyOccupied.classList.remove('hidden');
+      if (bodyEmpty) bodyEmpty.classList.add('hidden');
+      if (nameEl) nameEl.textContent = namaTerisi;
+    } else {
+      if (titleEl) titleEl.textContent = 'Informasi Kursi Bus';
+      if (bodyOccupied) bodyOccupied.classList.add('hidden');
+      if (bodyEmpty) bodyEmpty.classList.remove('hidden');
+      
+      var emptyText = 'Kursi kosong, Jika ingin mengisi kursi ' + seatCodeStr + ' harap hubungi panitia.';
+      if (emptyMsgEl) emptyMsgEl.textContent = emptyText;
+
+      var waText = "Assalamu'alaikum Admin Halal Bihalal RT,\n\nSaya ingin menanyakan/mengisi kursi yang masih kosong: *" + seatCodeStr + "*.\n\nMohon informasinya. Terima kasih!";
+      if (waBtn) waBtn.href = "https://wa.me/" + appState.adminWaPhone + "?text=" + encodeURIComponent(waText);
+    }
+
+    if (adminSwapBtn) {
+      if (appState.adminRole) {
+        adminSwapBtn.classList.remove('hidden');
+        adminSwapBtn.onclick = function() {
+          closeModal('modal-seat-detail');
+          appState.selectedSeatForSwap = { idBus: busId, noKursi: noKursi };
+          showToast('Pilih kursi kedua untuk menukar posisi kursi (' + busId + ' - ' + noKursi + ')', 'info');
+          renderBusSeats();
+        };
+      } else {
+        adminSwapBtn.classList.add('hidden');
+      }
+    }
+
+    openModal('modal-seat-detail');
   }
 
   function switchInfoHari(hari) {
@@ -881,7 +998,7 @@
     }
 
     var confirmMsg = '💥 PERINGATAN SUPER ADMIN! 💥\n\n' +
-      'Apakah Anda YAKIN ingin MENGHAPUS SEMUA DATABASE PESERTA, TABUNGAN, & KURSI BUS?\n\n' +
+      'Apakah Anda YAKIN ingin MENGHAPUS SEMUA DATABASE PESERTA, TABUNGAN, DANA SUMBANGAN & KURSI BUS?\n\n' +
       'Tindakan ini TIDAK DAPAT DIBATALKAN. Pastikan Anda sudah membuat BACKUP JSON terlebih dahulu!';
 
     if (!confirm(confirmMsg)) return;
