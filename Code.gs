@@ -3,7 +3,7 @@
  * ZETTBOS BACKEND SERVICE & BUSINESS LOGIC (MODULAR ARCHITECTURE)
  * File: Code.gs
  * Deskripsi: API CRUD, Multi-Bus Allocation, A-Z Sorting, System Tabungan,
- *            WA Kwitansi Digital, Rundown Info & Backup/Restore Database 1-Klik
+ *            Sistem Dana Sumbangan, Rundown Info & Backup/Restore Database 1-Klik
  * ============================================================================
  */
 
@@ -73,6 +73,32 @@ function generateSequentialLogId_() {
   var nextNum = maxNum + 1;
   var padded = ('0000' + nextNum).slice(-4);
   return 'LOG-' + padded;
+}
+
+function generateSequentialSumbanganId_() {
+  var ss = getSpreadsheet_();
+  var sheet = ss.getSheetByName('Dana_Sumbangan');
+  if (!sheet || sheet.getLastRow() <= 1) {
+    return 'SMB-0001';
+  }
+
+  var lastRow = sheet.getLastRow();
+  var idRange = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues();
+  
+  var maxNum = 0;
+  for (var i = 0; i < idRange.length; i++) {
+    var str = idRange[i][0] || '';
+    if (str.indexOf('SMB-') === 0) {
+      var numPart = parseInt(str.replace('SMB-', ''), 10);
+      if (!isNaN(numPart) && numPart > maxNum) {
+        maxNum = numPart;
+      }
+    }
+  }
+  
+  var nextNum = maxNum + 1;
+  var padded = ('0000' + nextNum).slice(-4);
+  return 'SMB-' + padded;
 }
 
 function formatNoRumah_(val) {
@@ -220,16 +246,21 @@ function getAppData(searchQuery, statusFilter) {
       }
     }
 
+    // Ambil Data Sumbangan / Donatur
+    var sumbanganData = getSumbanganData_();
     var infoData = getInfoAcaraData_();
 
     return {
       success: true,
       data: {
         peserta: pesertaList,
+        sumbanganList: sumbanganData.list,
         stats: {
           totalWarga: totalWarga,
           totalKepalaKeluarga: totalKepalaKeluarga,
           totalTabungan: totalTabunganSeluruhnya,
+          totalSumbangan: sumbanganData.totalSumbangan,
+          totalKasKeseluruhan: totalTabunganSeluruhnya + sumbanganData.totalSumbangan,
           totalKursiBus1: 33,
           kursiTerisiBus1: occupiedBus1,
           kursiTersisaBus1: Math.max(0, 33 - occupiedBus1),
@@ -245,6 +276,105 @@ function getAppData(searchQuery, statusFilter) {
     };
   } catch (err) {
     return { success: false, message: 'Gagal memuat data: ' + err.message };
+  }
+}
+
+function getSumbanganData_() {
+  var ss = getSpreadsheet_();
+  var sheet = ss.getSheetByName('Dana_Sumbangan');
+  var list = [];
+  var totalSumbangan = 0;
+
+  if (!sheet || sheet.getLastRow() <= 1) {
+    return { list: [], totalSumbangan: 0 };
+  }
+
+  var rawData = sheet.getRange(2, 1, sheet.getLastRow() - 1, 6).getDisplayValues();
+  for (var i = 0; i < rawData.length; i++) {
+    var row = rawData[i];
+    var nominal = parseInt(String(row[3]).replace(/\D/g, ''), 10);
+    if (isNaN(nominal)) nominal = 0;
+
+    totalSumbangan += nominal;
+    list.push({
+      id: row[0],
+      tanggal: row[1],
+      namaDonatur: row[2],
+      nominal: nominal,
+      keterangan: row[4],
+      adminPenyetor: row[5]
+    });
+  }
+
+  return { list: list, totalSumbangan: totalSumbangan };
+}
+
+function saveSumbangan(payload, adminRole) {
+  try {
+    if (adminRole !== 'Super Admin' && adminRole !== 'Admin') {
+      return { success: false, message: 'Akses ditolak. Penginputan sumbangan khusus Admin!' };
+    }
+
+    var ss = getSpreadsheet_();
+    var sheet = ss.getSheetByName('Dana_Sumbangan');
+    if (!sheet) {
+      sheet = ss.insertSheet('Dana_Sumbangan');
+      sheet.appendRow(['ID Sumbangan', 'Tanggal & Waktu', 'Nama Donatur', 'Nominal Sumbangan', 'Keterangan / Peruntukan', 'Admin Penerima']);
+      formatHeaderRow_(sheet, 6, '#D97706');
+    }
+
+    var nominal = parseInt(payload.nominal, 10);
+    if (isNaN(nominal) || nominal <= 0) {
+      return { success: false, message: 'Nominal sumbangan harus berupa angka positif.' };
+    }
+
+    var nowFormatted = Utilities.formatDate(new Date(), 'Asia/Jakarta', 'dd/MM/yyyy HH:mm:ss');
+    var id = payload.id || generateSequentialSumbanganId_();
+    var isEdit = false;
+
+    if (sheet.getLastRow() > 1) {
+      var data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 6).getDisplayValues();
+      for (var i = 0; i < data.length; i++) {
+        if (data[i][0] === id) {
+          sheet.getRange(i + 2, 1, 1, 6).setValues([[id, nowFormatted, payload.namaDonatur, nominal, payload.keterangan || '-', adminRole]]);
+          isEdit = true;
+          break;
+        }
+      }
+    }
+
+    if (!isEdit) {
+      sheet.appendRow([id, nowFormatted, payload.namaDonatur, nominal, payload.keterangan || '-', adminRole]);
+    }
+
+    SpreadsheetApp.flush();
+    return { success: true, message: isEdit ? 'Data sumbangan berhasil diperbarui!' : 'Dana sumbangan baru berhasil dicatat!' };
+  } catch (err) {
+    return { success: false, message: 'Gagal menyimpan sumbangan: ' + err.message };
+  }
+}
+
+function deleteSumbangan(id, adminRole) {
+  try {
+    if (adminRole !== 'Super Admin' && adminRole !== 'Admin') {
+      return { success: false, message: 'Akses ditolak.' };
+    }
+
+    var ss = getSpreadsheet_();
+    var sheet = ss.getSheetByName('Dana_Sumbangan');
+    if (!sheet || sheet.getLastRow() <= 1) return { success: false, message: 'Data sumbangan tidak ditemukan.' };
+
+    var data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 6).getDisplayValues();
+    for (var i = 0; i < data.length; i++) {
+      if (data[i][0] === id) {
+        sheet.deleteRow(i + 2);
+        SpreadsheetApp.flush();
+        return { success: true, message: 'Data sumbangan berhasil dihapus!' };
+      }
+    }
+    return { success: false, message: 'ID Sumbangan tidak ditemukan.' };
+  } catch (err) {
+    return { success: false, message: 'Gagal menghapus sumbangan: ' + err.message };
   }
 }
 
@@ -1023,7 +1153,7 @@ function getExportData() {
 function backupDatabase() {
   try {
     var ss = getSpreadsheet_();
-    var sheetsToBackup = ['Peserta', 'Kursi_Bus', 'Log_Tabungan', 'Konfigurasi', 'Rundown_Acara', 'Kontak_Panitia'];
+    var sheetsToBackup = ['Peserta', 'Kursi_Bus', 'Log_Tabungan', 'Dana_Sumbangan', 'Konfigurasi', 'Rundown_Acara', 'Kontak_Panitia'];
     var backupObj = {
       appName: 'Web App Halal Bihalal RT',
       backupTime: Utilities.formatDate(new Date(), 'Asia/Jakarta', 'dd/MM/yyyy HH:mm:ss'),
@@ -1059,19 +1189,25 @@ function clearAllDatabase(adminRole) {
 
     var ss = getSpreadsheet_();
 
-    // 1. Kosongkan Data Peserta (mulai baris 2)
+    // 1. Kosongkan Data Peserta
     var sheetPeserta = ss.getSheetByName('Peserta');
     if (sheetPeserta && sheetPeserta.getLastRow() > 1) {
       sheetPeserta.deleteRows(2, sheetPeserta.getLastRow() - 1);
     }
 
-    // 2. Kosongkan Log Tabungan (mulai baris 2)
+    // 2. Kosongkan Log Tabungan
     var sheetLog = ss.getSheetByName('Log_Tabungan');
     if (sheetLog && sheetLog.getLastRow() > 1) {
       sheetLog.deleteRows(2, sheetLog.getLastRow() - 1);
     }
 
-    // 3. Reset Alokasi Kursi Bus (kosongkan ID Peserta & Nama Terisi)
+    // 3. Kosongkan Dana Sumbangan
+    var sheetSumbangan = ss.getSheetByName('Dana_Sumbangan');
+    if (sheetSumbangan && sheetSumbangan.getLastRow() > 1) {
+      sheetSumbangan.deleteRows(2, sheetSumbangan.getLastRow() - 1);
+    }
+
+    // 4. Reset Alokasi Kursi Bus
     var sheetBus = ss.getSheetByName('Kursi_Bus');
     if (sheetBus && sheetBus.getLastRow() > 1) {
       var numRows = sheetBus.getLastRow() - 1;
@@ -1085,7 +1221,7 @@ function clearAllDatabase(adminRole) {
     SpreadsheetApp.flush();
     return {
       success: true,
-      message: '💥 Seluruh database peserta, log tabungan, dan alokasi kursi berhasil dikosongkan! Aplikasi siap untuk Launching.'
+      message: '💥 Seluruh database peserta, log tabungan, dana sumbangan, dan alokasi kursi berhasil dikosongkan!'
     };
   } catch (err) {
     return { success: false, message: 'Gagal mengosongkan database: ' + err.message };
@@ -1104,7 +1240,7 @@ function restoreDatabase(backupJsonString) {
     }
 
     var ss = getSpreadsheet_();
-    var sheetNames = ['Peserta', 'Kursi_Bus', 'Log_Tabungan', 'Konfigurasi', 'Rundown_Acara', 'Kontak_Panitia'];
+    var sheetNames = ['Peserta', 'Kursi_Bus', 'Log_Tabungan', 'Dana_Sumbangan', 'Konfigurasi', 'Rundown_Acara', 'Kontak_Panitia'];
 
     for (var s = 0; s < sheetNames.length; s++) {
       var name = sheetNames[s];
