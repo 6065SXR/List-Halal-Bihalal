@@ -2,8 +2,10 @@
  * ============================================================================
  * ZETTBOS BACKEND SERVICE & BUSINESS LOGIC (MODULAR ARCHITECTURE)
  * File: Code.gs
- * Deskripsi: API CRUD, Multi-Bus Allocation, A-Z Sorting, System Tabungan,
- *            Sistem Dana Sumbangan, Rundown Info & Backup/Restore Database 1-Klik
+ * Deskripsi: API CRUD, Multi-Bus Allocation (Bus 1, 2, 3 - 99 Seats),
+ *            Algoritma Kursi Keluarga Bersebelahan Format Huruf (1A-7D & 8A-8E),
+ *            Pencocokan Ganda (ID + Nama), Smart Solo Displacement,
+ *            Relokasi Kluster 1 Paket Keluarga & System Tabungan Real-Time
  * ============================================================================
  */
 
@@ -222,22 +224,25 @@ function getAppData(searchQuery, statusFilter) {
     var seatsList = [];
     var occupiedBus1 = 0;
     var occupiedBus2 = 0;
+    var occupiedBus3 = 0;
 
     if (busLastRow > 1) {
       var rawBus = sheetBus.getRange(2, 1, busLastRow - 1, 6).getDisplayValues();
       for (var b = 0; b < rawBus.length; b++) {
         var seatRow = rawBus[b];
         var busId = seatRow[0] || 'Bus 1';
+        var seatNoClean = String(seatRow[1] || '').trim().toUpperCase();
         var isOccupied = (seatRow[5] && seatRow[5].trim() !== '');
         
         if (isOccupied) {
           if (busId === 'Bus 1') occupiedBus1++;
-          if (busId === 'Bus 2') occupiedBus2++;
+          else if (busId === 'Bus 2') occupiedBus2++;
+          else if (busId === 'Bus 3') occupiedBus3++;
         }
 
         seatsList.push({
           idBus: busId,
-          noKursi: seatRow[1],
+          noKursi: seatNoClean,
           baris: parseInt(seatRow[2], 10) || 1,
           tipeKursi: seatRow[3],
           idPeserta: seatRow[4],
@@ -246,7 +251,6 @@ function getAppData(searchQuery, statusFilter) {
       }
     }
 
-    // Ambil Data Sumbangan / Donatur
     var sumbanganData = getSumbanganData_();
     var infoData = getInfoAcaraData_();
 
@@ -267,8 +271,11 @@ function getAppData(searchQuery, statusFilter) {
           totalKursiBus2: 33,
           kursiTerisiBus2: occupiedBus2,
           kursiTersisaBus2: Math.max(0, 33 - occupiedBus2),
-          totalKursiAll: 66,
-          kursiTerisiAll: occupiedBus1 + occupiedBus2
+          totalKursiBus3: 33,
+          kursiTerisiBus3: occupiedBus3,
+          kursiTersisaBus3: Math.max(0, 33 - occupiedBus3),
+          totalKursiAll: 99,
+          kursiTerisiAll: occupiedBus1 + occupiedBus2 + occupiedBus3
         },
         seats: seatsList,
         info: infoData
@@ -388,10 +395,10 @@ function getInfoAcaraData_() {
 
   var defaultRundown = [
     { id: 'RD-001', hari: 'Hari 1', jam: '06:00 - 06:30', judul: 'Kumpul & Absensi Peserta Bus', keterangan: 'Titik Kumpul: Kp. Baru I Jl. Marga Mulya (Depan Pos Satpam RT 03)' },
-    { id: 'RD-002', hari: 'Hari 1', jam: '06:45 WIB', judul: 'Keberangkatan Bus Medium 1 & Bus 2', keterangan: 'Seluruh armada berangkat bersama. Mohon hadir tepat waktu!' },
+    { id: 'RD-002', hari: 'Hari 1', jam: '06:45 WIB', judul: 'Keberangkatan Bus Medium 1, Bus 2, & Bus 3', keterangan: 'Seluruh armada berangkat bersama. Mohon hadir tepat waktu!' },
     { id: 'RD-003', hari: 'Hari 1', jam: '09:30 - 11:30', judul: 'Pembukaan, Tausiyah & Halal Bihalal', keterangan: 'Sambutan Ketua RT, Mushafahah/Salaman Warga, dan Tausiyah Agama' },
     { id: 'RD-004', hari: 'Hari 1', jam: '11:30 - 13:30', judul: 'Makan Siang & Ramah Tamah', keterangan: 'Santap Catering bersama & Pembagian Doorprize Digital' },
-    { id: 'RD-005', hari: 'Hari 1', jam: '15:30 WIB', judul: 'Persiapan Pulang ke Kamp Baru I', keterangan: 'Pengecekan ulang seluruh anggota keluarga di Bus 1 & Bus 2' },
+    { id: 'RD-005', hari: 'Hari 1', jam: '15:30 WIB', judul: 'Persiapan Pulang ke Kamp Baru I', keterangan: 'Pengecekan ulang seluruh anggota keluarga di Bus 1, Bus 2, & Bus 3' },
     { id: 'RD-006', hari: 'Hari 2', jam: '07:30 - 09:00', judul: 'Senam Pagi Warga & Sarapan Bersama', keterangan: 'Area Lapangan Villa / Resort Halal Bihalal' },
     { id: 'RD-007', hari: 'Hari 2', jam: '09:30 - 12:00', judul: 'Fun Games Warga & Pembagian Hadiah', keterangan: 'Lomba keakraban antar RT & Door Prize Utama' },
     { id: 'RD-008', hari: 'Hari 2', jam: '13:00 WIB', judul: 'Check Out & Perjalanan Pulang', keterangan: 'Seluruh armada bus kembali ke Jakarta' }
@@ -438,7 +445,7 @@ function getInfoAcaraData_() {
 function saveRundownItem(item, adminRole) {
   try {
     if (adminRole !== 'Super Admin' && adminRole !== 'Admin') {
-      return { success: false, message: 'Akses ditolak. Membutuhkan hak akses Admin / Super Admin.' };
+      return { success: false, message: 'Akses ditolak.' };
     }
 
     var ss = getSpreadsheet_();
@@ -597,7 +604,6 @@ function registerParticipant(payload) {
     var nowFormatted = Utilities.formatDate(new Date(), 'Asia/Jakarta', 'dd/MM/yyyy HH:mm:ss');
     var alamatFix = 'Kamp baru I Jl. Marga Mulya';
     
-    // Proteksi Keuangan: Hanya izinkan setoran awal jika pendaftaran dilakukan oleh Admin / Super Admin
     var setoranAwal = 0;
     if (payload.adminRole === 'Admin' || payload.adminRole === 'Super Admin') {
       setoranAwal = parseInt(payload.setoranAwal || 0, 10);
@@ -647,7 +653,7 @@ function registerParticipant(payload) {
       pinAkses: generatedPin,
       noWhatsapp: newRow[3],
       assignedBus: assignedInfo ? assignedInfo.busId : 'Bus 1',
-      assignedSeat: assignedInfo ? assignedInfo.seatNo : '01',
+      assignedSeat: assignedInfo ? assignedInfo.seatNo : '1A',
       setoranAwal: setoranAwal,
       message: 'Pendaftaran berhasil! PIN Akses Anda: ' + generatedPin
     };
@@ -669,7 +675,6 @@ function addFamilyMember(payload) {
     var namaAnggota = String(payload.namaAnggota || '').trim();
     var hubungan = String(payload.hubungan || 'Istri').trim();
 
-    // Proteksi Keuangan: Hanya izinkan setoran awal jika ditambahkan oleh Admin / Super Admin
     var setoranAwal = 0;
     if (payload.adminRole === 'Admin' || payload.adminRole === 'Super Admin') {
       setoranAwal = parseInt(payload.setoranAwal || 0, 10);
@@ -740,7 +745,8 @@ function addFamilyMember(payload) {
       ]);
     }
 
-    var assignedInfo = autoAssignFirstAvailableSeatMultiBus_(sheetBus, idTransaksi, namaAnggota);
+    // ALGORITMA CERDAS: Tempatkan anggota keluarga BERDAMPINGAN dengan Sponsor
+    var assignedInfo = autoAssignFamilySeatMultiBus_(sheetBus, sheetPeserta, idTransaksi, namaAnggota, sponsorId, sponsorNama);
     SpreadsheetApp.flush();
 
     return {
@@ -748,11 +754,477 @@ function addFamilyMember(payload) {
       idTransaksi: idTransaksi,
       namaAnggota: namaAnggota,
       assignedBus: assignedInfo ? assignedInfo.busId : 'Bus 1',
-      assignedSeat: assignedInfo ? assignedInfo.seatNo : '01',
-      message: 'Anggota keluarga (' + hubungan + ') berhasil ditambahkan.'
+      assignedSeat: assignedInfo ? assignedInfo.seatNo : '1A',
+      message: 'Anggota keluarga (' + hubungan + ') berhasil didaftarkan di ' + (assignedInfo ? (assignedInfo.busId + ' Kursi ' + assignedInfo.seatNo) : '') + '!'
     };
   } catch (err) {
     return { success: false, message: 'Gagal menambah anggota keluarga: ' + err.message };
+  }
+}
+
+/**
+ * ============================================================================
+ * ALGORITMA PENEMPATAN KURSI KELUARGA BERDAMPINGAN (FAMILY SEATING CLUSTER)
+ * Format Kode Kursi: 1A-7D & 8A-8E
+ * 
+ * Logika & Skenario:
+ * 1. Deteksi posisi Kepala Keluarga (Sponsor) berdasarkan ID Transaksi DAN Nama Lengkap.
+ * 2. Cek kursi tetangga sebangku (A dengan B, C dengan D).
+ * 3. Jika kursi tetangga kosong: Langsung tempatkan anggota keluarga di sana.
+ * 4. Jika kursi tetangga terisi peserta solo: Geser peserta solo ke kursi kosong lain di bus yang sama (Smart Displacement).
+ * 5. Jika kursi tetangga tidak bisa digeser: Relokasikan Sponsor + Anggota baru bersama-sama (1 Paket Kluster) ke deret 2 kursi kosong di Bus 1 / Bus 2 / Bus 3.
+ * ============================================================================
+ */
+function autoAssignFamilySeatMultiBus_(sheetBus, sheetPeserta, idPeserta, namaPeserta, sponsorId, sponsorNama) {
+  var lastRowBus = sheetBus.getLastRow();
+  if (lastRowBus <= 1) return null;
+
+  var busData = sheetBus.getRange(2, 1, lastRowBus - 1, 6).getValues();
+
+  // 1. Kumpulkan seluruh ID dan Nama anggota rombongan keluarga yang telah terdaftar
+  var familyIds = [sponsorId];
+  var familyNames = [sponsorNama ? sponsorNama.toLowerCase().trim() : ''];
+
+  var lastRowPeserta = sheetPeserta.getLastRow();
+  if (lastRowPeserta > 1) {
+    var pData = sheetPeserta.getRange(2, 1, lastRowPeserta - 1, 13).getValues();
+    for (var p = 0; p < pData.length; p++) {
+      var curSponsorId = String(pData[p][10] || '').trim();
+      var curId = String(pData[p][0] || '').trim();
+      var curName = String(pData[p][2] || '').toLowerCase().trim();
+
+      if (curSponsorId === sponsorId) {
+        if (familyIds.indexOf(curId) === -1) familyIds.push(curId);
+        if (familyNames.indexOf(curName) === -1) familyNames.push(curName);
+      }
+    }
+  }
+
+  // 2. Temukan di mana posisi kursi anggota keluarga (terutama kepala keluarga) saat ini
+  //    Mendukung deteksi ganda melalui ID maupun Nama jika ID sempat kosong di Kursi_Bus
+  var seatedFamily = [];
+  var familyBusId = null;
+
+  for (var i = 0; i < busData.length; i++) {
+    var seatPId = String(busData[i][4] || '').trim();
+    var seatPName = String(busData[i][5] || '').toLowerCase().trim();
+
+    var isFamilyMatch = (seatPId && familyIds.indexOf(seatPId) !== -1) ||
+                        (seatPName && familyNames.indexOf(seatPName) !== -1);
+
+    if (isFamilyMatch) {
+      var seatCodeStr = String(busData[i][1] || '').trim().toUpperCase();
+      seatedFamily.push({
+        index: i,
+        busId: busData[i][0],
+        noKursi: seatCodeStr,
+        baris: parseInt(busData[i][2], 10),
+        idPeserta: seatPId || sponsorId,
+        nama: busData[i][5]
+      });
+
+      if (!familyBusId) {
+        familyBusId = busData[i][0];
+      }
+    }
+  }
+
+  // Jika sponsor belum duduk, gunakan alokasi kursi kosong biasa
+  if (seatedFamily.length === 0 || !familyBusId) {
+    return autoAssignFirstAvailableSeatMultiBus_(sheetBus, idPeserta, namaPeserta);
+  }
+
+  // 3. Susun daftar nomor kursi tetangga berpasangan (A-B dan C-D diutamakan)
+  var candidateNeighborSeats = [];
+  for (var f = 0; f < seatedFamily.length; f++) {
+    var primarySeat = seatedFamily[f].noKursi;
+    var adjList = getAdjacentSeatsLetter_(primarySeat);
+    for (var a = 0; a < adjList.length; a++) {
+      if (candidateNeighborSeats.indexOf(adjList[a]) === -1) {
+        candidateNeighborSeats.push(adjList[a]);
+      }
+    }
+  }
+
+  // TAHAP 1: Cari apakah kursi tetangga berpasangan KOSONG di armada bus yang sama
+  for (var c1 = 0; c1 < candidateNeighborSeats.length; c1++) {
+    var targetSeatNo = candidateNeighborSeats[c1];
+
+    for (var b1 = 0; b1 < busData.length; b1++) {
+      if (busData[b1][0] === familyBusId && String(busData[b1][1]).trim().toUpperCase() === targetSeatNo) {
+        var occName = busData[b1][5];
+        if (!occName || String(occName).trim() === '') {
+          var targetRow = b1 + 2;
+          sheetBus.getRange(targetRow, 5, 1, 2).setValues([[idPeserta, namaPeserta]]);
+          return { busId: familyBusId, seatNo: targetSeatNo };
+        }
+      }
+    }
+  }
+
+  // TAHAP 2: Jika kursi tetangga terisi, periksa apakah diduduki oleh PENUMPANG SOLO (SMART DISPLACEMENT)
+  //          Cari kursi kosong lain di bus yang sama, lalu tukar posisi peserta solo tersebut
+  var emptySeatIndexInSameBus = -1;
+  for (var eb = 0; eb < busData.length; eb++) {
+    if (busData[eb][0] === familyBusId) {
+      var checkName = busData[eb][5];
+      if (!checkName || String(checkName).trim() === '') {
+        emptySeatIndexInSameBus = eb;
+        break;
+      }
+    }
+  }
+
+  if (emptySeatIndexInSameBus !== -1) {
+    for (var c2 = 0; c2 < candidateNeighborSeats.length; c2++) {
+      var candSeatCode = candidateNeighborSeats[c2];
+
+      for (var s2 = 0; s2 < busData.length; s2++) {
+        if (busData[s2][0] === familyBusId && String(busData[s2][1]).trim().toUpperCase() === candSeatCode) {
+          var seatedId = String(busData[s2][4] || '').trim();
+          var seatedName = String(busData[s2][5] || '').trim();
+
+          if (seatedName && isSoloParticipant_(sheetPeserta, seatedId, seatedName)) {
+            // Pindahkan penumpang solo ke kursi kosong di bus yang sama
+            var targetEmptyRow = emptySeatIndexInSameBus + 2;
+            sheetBus.getRange(targetEmptyRow, 5, 1, 2).setValues([[seatedId, seatedName]]);
+
+            // Masukkan anggota keluarga ke kursi samping sponsor yang baru dikosongkan
+            var targetSeatRow = s2 + 2;
+            sheetBus.getRange(targetSeatRow, 5, 1, 2).setValues([[idPeserta, namaPeserta]]);
+
+            return { busId: familyBusId, seatNo: candSeatCode };
+          }
+        }
+      }
+    }
+  }
+
+  // TAHAP 3: RELOKASI KLUSTER 1 PAKET KELUARGA (CLUSTER RELOCATION DI ARMADA SAMA)
+  //          Jika kursi samping tidak bisa digeser, cari deret 2 kursi kosong berdampingan di armada yang sama
+  var headSeatObj = seatedFamily[0];
+  var availableEmptyPair = findAvailableEmptyPairInBus_(busData, familyBusId);
+
+  if (availableEmptyPair) {
+    // 1. Kosongkan kursi lama kepala keluarga
+    var oldHeadRow = headSeatObj.index + 2;
+    sheetBus.getRange(oldHeadRow, 5, 1, 2).setValues([['', '']]);
+
+    // 2. Pindahkan kepala keluarga ke kursi pertama pasangan kosong
+    var newHeadRow = availableEmptyPair.seat1Index + 2;
+    sheetBus.getRange(newHeadRow, 5, 1, 2).setValues([[headSeatObj.idPeserta, headSeatObj.nama]]);
+
+    // 3. Masukkan anggota baru ke kursi kedua pasangan kosong (berdampingan)
+    var newMemberRow = availableEmptyPair.seat2Index + 2;
+    sheetBus.getRange(newMemberRow, 5, 1, 2).setValues([[idPeserta, namaPeserta]]);
+
+    return { busId: familyBusId, seatNo: availableEmptyPair.seat2No };
+  }
+
+  // TAHAP 4: RELOKASI KLUSTER ANTAR ARMADA (PINDAH BERSAMA KE BUS 2 ATAU BUS 3)
+  //          Jika armada saat ini padat dan tidak ada 2 kursi berdampingan, pindahkan keduanya bersama
+  var altBuses = ['Bus 2', 'Bus 3'];
+  for (var ab = 0; ab < altBuses.length; ab++) {
+    var altBusId = altBuses[ab];
+    var altPair = findAvailableEmptyPairInBus_(busData, altBusId);
+
+    if (altPair) {
+      // Kosongkan kursi lama sponsor di bus sebelumnya
+      var prevHeadRow = headSeatObj.index + 2;
+      sheetBus.getRange(prevHeadRow, 5, 1, 2).setValues([['', '']]);
+
+      // Pindahkan sponsor ke kursi pasangan 1 di bus baru
+      var altHeadRow = altPair.seat1Index + 2;
+      sheetBus.getRange(altHeadRow, 5, 1, 2).setValues([[headSeatObj.idPeserta, headSeatObj.nama]]);
+
+      // Masukkan anggota baru ke kursi pasangan 2 di bus baru
+      var altMemberRow = altPair.seat2Index + 2;
+      sheetBus.getRange(altMemberRow, 5, 1, 2).setValues([[idPeserta, namaPeserta]]);
+
+      return { busId: altBusId, seatNo: altPair.seat2No };
+    }
+  }
+
+  // TAHAP 5: Fallback jika seluruh armada penuh, ambil kursi kosong yang tersisa
+  return autoAssignFirstAvailableSeatMultiBus_(sheetBus, idPeserta, namaPeserta);
+}
+
+/**
+ * Helper: Menghitung daftar kursi bersebelahan untuk format Medium Bus (1A-7D & 8A-8E)
+ * Prioritas 1: Sebangku (A dengan B, C dengan D)
+ * Prioritas 2: Seberang lorong (B dengan C)
+ * Prioritas 3: Depan atau belakangnya
+ */
+function getAdjacentSeatsLetter_(seatCode) {
+  var s = String(seatCode || '').trim().toUpperCase();
+  var neighbors = [];
+
+  var match = s.match(/^([1-7])([A-D])$/);
+  if (match) {
+    var row = parseInt(match[1], 10);
+    var col = match[2];
+
+    // Prioritas 1: Pasangan sebangku
+    if (col === 'A') neighbors.push(row + 'B');
+    if (col === 'B') neighbors.push(row + 'A');
+    if (col === 'C') neighbors.push(row + 'D');
+    if (col === 'D') neighbors.push(row + 'C');
+
+    // Prioritas 2: Seberang lorong
+    if (col === 'B') neighbors.push(row + 'C');
+    if (col === 'C') neighbors.push(row + 'B');
+
+    // Prioritas 3: Depan dan belakang
+    if (row > 1) neighbors.push((row - 1) + col);
+    if (row < 7) neighbors.push((row + 1) + col);
+    if (row === 7) {
+      if (col === 'A') neighbors.push('8A');
+      if (col === 'B') neighbors.push('8B');
+      if (col === 'C') neighbors.push('8D');
+      if (col === 'D') neighbors.push('8E');
+    }
+  } else {
+    if (s === '8A') { neighbors.push('8B'); neighbors.push('7A'); }
+    if (s === '8B') { neighbors.push('8A'); neighbors.push('8C'); neighbors.push('7B'); }
+    if (s === '8C') { neighbors.push('8B'); neighbors.push('8D'); }
+    if (s === '8D') { neighbors.push('8C'); neighbors.push('8E'); neighbors.push('7C'); }
+    if (s === '8E') { neighbors.push('8D'); neighbors.push('7D'); }
+  }
+
+  return neighbors;
+}
+
+/**
+ * Helper: Mencari deret 2 kursi bersebelahan yang kosong di armada tertentu
+ */
+function findAvailableEmptyPairInBus_(busData, targetBusId) {
+  var pairs = [];
+  for (var r = 1; r <= 7; r++) {
+    pairs.push([r + 'A', r + 'B']);
+    pairs.push([r + 'C', r + 'D']);
+  }
+  pairs.push(['8A', '8B']);
+  pairs.push(['8B', '8C']);
+  pairs.push(['8C', '8D']);
+  pairs.push(['8D', '8E']);
+
+  var busMap = {};
+  for (var i = 0; i < busData.length; i++) {
+    if (busData[i][0] === targetBusId) {
+      var sNo = String(busData[i][1]).trim().toUpperCase();
+      var occ = busData[i][5];
+      busMap[sNo] = {
+        index: i,
+        seatNo: sNo,
+        isEmpty: (!occ || String(occ).trim() === '')
+      };
+    }
+  }
+
+  for (var p = 0; p < pairs.length; p++) {
+    var p1 = pairs[p][0];
+    var p2 = pairs[p][1];
+
+    if (busMap[p1] && busMap[p2]) {
+      if (busMap[p1].isEmpty && busMap[p2].isEmpty) {
+        return {
+          seat1No: p1,
+          seat1Index: busMap[p1].index,
+          seat2No: p2,
+          seat2Index: busMap[p2].index
+        };
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Helper: Memastikan apakah seorang peserta adalah penumpang solo/mandiri
+ * Mendukung pencocokan melalui ID Transaksi atau Nama Lengkap
+ */
+function isSoloParticipant_(sheetPeserta, pId, pName) {
+  if (!pId && !pName) return true;
+  var lastRow = sheetPeserta.getLastRow();
+  if (lastRow <= 1) return true;
+
+  var data = sheetPeserta.getRange(2, 1, lastRow - 1, 13).getValues();
+  var targetRow = null;
+  var pIdClean = String(pId || '').trim();
+  var pNameClean = String(pName || '').toLowerCase().trim();
+
+  for (var i = 0; i < data.length; i++) {
+    var curId = String(data[i][0] || '').trim();
+    var curName = String(data[i][2] || '').toLowerCase().trim();
+
+    if ((pIdClean && curId === pIdClean) || (pNameClean && curName === pNameClean)) {
+      targetRow = data[i];
+      break;
+    }
+  }
+
+  if (!targetRow) return true;
+
+  var targetId = String(targetRow[0] || '').trim();
+  var sponsorId = String(targetRow[10] || '').trim();
+
+  // Jika peserta ini memiliki sponsor, berarti ia bagian dari keluarga lain
+  if (sponsorId !== '') return false;
+
+  // Jika peserta ini menjadi sponsor bagi orang lain, berarti ia membawa keluarga
+  for (var j = 0; j < data.length; j++) {
+    var checkSponsor = String(data[j][10] || '').trim();
+    if (checkSponsor === targetId) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function autoAssignFirstAvailableSeatMultiBus_(sheetBus, idPeserta, namaPeserta) {
+  var lastRow = sheetBus.getLastRow();
+  if (lastRow <= 1) return null;
+
+  var busData = sheetBus.getRange(2, 1, lastRow - 1, 6).getValues();
+  for (var i = 0; i < busData.length; i++) {
+    var namaTerisi = busData[i][5];
+    if (!namaTerisi || String(namaTerisi).trim() === '') {
+      var rowTarget = i + 2;
+      sheetBus.getRange(rowTarget, 5, 1, 2).setValues([[idPeserta, namaPeserta]]);
+      return {
+        busId: busData[i][0],
+        seatNo: String(busData[i][1]).trim().toUpperCase()
+      };
+    }
+  }
+  return null;
+}
+
+function adminLogin(pin) {
+  try {
+    var inputPin = String(pin || '').trim();
+    var ss = getSpreadsheet_();
+    var sheetConfig = ss.getSheetByName('Konfigurasi');
+    
+    var adminPin = '1234';
+    var superAdminPin = '9999';
+
+    if (sheetConfig && sheetConfig.getLastRow() > 1) {
+      var configs = sheetConfig.getRange(2, 1, sheetConfig.getLastRow() - 1, 2).getDisplayValues();
+      for (var i = 0; i < configs.length; i++) {
+        if (configs[i][0] === 'ADMIN_PIN') adminPin = configs[i][1];
+        if (configs[i][0] === 'SUPERADMIN_PIN') superAdminPin = configs[i][1];
+      }
+    }
+
+    if (inputPin === superAdminPin) {
+      return { success: true, role: 'Super Admin', token: 'SUPER_' + new Date().getTime() };
+    } else if (inputPin === adminPin) {
+      return { success: true, role: 'Admin', token: 'ADMIN_' + new Date().getTime() };
+    } else {
+      return { success: false, message: 'PIN Admin salah.' };
+    }
+  } catch (err) {
+    return { success: false, message: 'Error otentikasi: ' + err.message };
+  }
+}
+
+function deleteParticipant(idTransaksi) {
+  try {
+    var ss = getSpreadsheet_();
+    var sheetPeserta = ss.getSheetByName('Peserta');
+    var sheetBus = ss.getSheetByName('Kursi_Bus');
+
+    var lastRow = sheetPeserta.getLastRow();
+    if (lastRow <= 1) return { success: false, message: 'Data kosong.' };
+
+    var data = sheetPeserta.getRange(2, 1, lastRow - 1, 13).getDisplayValues();
+    var rowsToDelete = [];
+    var affectedIds = [idTransaksi];
+
+    for (var i = 0; i < data.length; i++) {
+      var curId = data[i][0];
+      var sponsorId = data[i][10];
+      if (curId === idTransaksi || sponsorId === idTransaksi) {
+        rowsToDelete.push(i + 2);
+        if (curId !== idTransaksi) affectedIds.push(curId);
+      }
+    }
+
+    rowsToDelete.sort(function(a, b) { return b - a; });
+    for (var r = 0; r < rowsToDelete.length; r++) {
+      sheetPeserta.deleteRow(rowsToDelete[r]);
+    }
+
+    var busLastRow = sheetBus.getLastRow();
+    if (busLastRow > 1) {
+      var busRange = sheetBus.getRange(2, 1, busLastRow - 1, 6);
+      var busData = busRange.getValues();
+      var changed = false;
+
+      for (var b = 0; b < busData.length; b++) {
+        var seatedId = String(busData[b][4] || '').trim();
+        if (affectedIds.indexOf(seatedId) !== -1) {
+          busData[b][4] = '';
+          busData[b][5] = '';
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        busRange.setValues(busData);
+      }
+    }
+
+    SpreadsheetApp.flush();
+    return { success: true, message: 'Data peserta dan alokasi kursi berhasil dihapus.' };
+  } catch (err) {
+    return { success: false, message: 'Gagal menghapus data: ' + err.message };
+  }
+}
+
+function swapBusSeats(busIdA, seatNoA, busIdB, seatNoB) {
+  try {
+    var ss = getSpreadsheet_();
+    var sheetBus = ss.getSheetByName('Kursi_Bus');
+    var lastRow = sheetBus.getLastRow();
+    if (lastRow <= 1) return { success: false, message: 'Data kursi tidak tersedia.' };
+
+    var range = sheetBus.getRange(2, 1, lastRow - 1, 6);
+    var data = range.getValues();
+
+    var indexA = -1;
+    var indexB = -1;
+
+    for (var i = 0; i < data.length; i++) {
+      if (String(data[i][0]) === String(busIdA) && String(data[i][1]).trim().toUpperCase() === String(seatNoA).trim().toUpperCase()) indexA = i;
+      if (String(data[i][0]) === String(busIdB) && String(data[i][1]).trim().toUpperCase() === String(seatNoB).trim().toUpperCase()) indexB = i;
+    }
+
+    if (indexA === -1 || indexB === -1) {
+      return { success: false, message: 'Salah satu posisi kursi tidak ditemukan.' };
+    }
+
+    var tempId = data[indexA][4];
+    var tempName = data[indexA][5];
+
+    data[indexA][4] = data[indexB][4];
+    data[indexA][5] = data[indexB][5];
+
+    data[indexB][4] = tempId;
+    data[indexB][5] = tempName;
+
+    range.setValues(data);
+    SpreadsheetApp.flush();
+
+    return { 
+      success: true, 
+      message: 'Kursi (' + busIdA + ' - ' + seatNoA + ') dan (' + busIdB + ' - ' + seatNoB + ') berhasil ditukar!' 
+    };
+  } catch (err) {
+    return { success: false, message: 'Gagal menukar kursi: ' + err.message };
   }
 }
 
@@ -870,151 +1342,6 @@ function getTabunganLog(idTransaksi) {
   }
 }
 
-function autoAssignFirstAvailableSeatMultiBus_(sheetBus, idPeserta, namaPeserta) {
-  var lastRow = sheetBus.getLastRow();
-  if (lastRow <= 1) return null;
-
-  var busData = sheetBus.getRange(2, 1, lastRow - 1, 6).getValues();
-  for (var i = 0; i < busData.length; i++) {
-    var namaTerisi = busData[i][5];
-    if (!namaTerisi || String(namaTerisi).trim() === '') {
-      var rowTarget = i + 2;
-      sheetBus.getRange(rowTarget, 5, 1, 2).setValues([[idPeserta, namaPeserta]]);
-      return {
-        busId: busData[i][0],
-        seatNo: busData[i][1]
-      };
-    }
-  }
-  return null;
-}
-
-function adminLogin(pin) {
-  try {
-    var inputPin = String(pin || '').trim();
-    var ss = getSpreadsheet_();
-    var sheetConfig = ss.getSheetByName('Konfigurasi');
-    
-    var adminPin = '1234';
-    var superAdminPin = '9999';
-
-    if (sheetConfig && sheetConfig.getLastRow() > 1) {
-      var configs = sheetConfig.getRange(2, 1, sheetConfig.getLastRow() - 1, 2).getDisplayValues();
-      for (var i = 0; i < configs.length; i++) {
-        if (configs[i][0] === 'ADMIN_PIN') adminPin = configs[i][1];
-        if (configs[i][0] === 'SUPERADMIN_PIN') superAdminPin = configs[i][1];
-      }
-    }
-
-    if (inputPin === superAdminPin) {
-      return { success: true, role: 'Super Admin', token: 'SUPER_' + new Date().getTime() };
-    } else if (inputPin === adminPin) {
-      return { success: true, role: 'Admin', token: 'ADMIN_' + new Date().getTime() };
-    } else {
-      return { success: false, message: 'PIN Admin salah.' };
-    }
-  } catch (err) {
-    return { success: false, message: 'Error otentikasi: ' + err.message };
-  }
-}
-
-function deleteParticipant(idTransaksi) {
-  try {
-    var ss = getSpreadsheet_();
-    var sheetPeserta = ss.getSheetByName('Peserta');
-    var sheetBus = ss.getSheetByName('Kursi_Bus');
-
-    var lastRow = sheetPeserta.getLastRow();
-    if (lastRow <= 1) return { success: false, message: 'Data kosong.' };
-
-    var data = sheetPeserta.getRange(2, 1, lastRow - 1, 13).getDisplayValues();
-    var rowsToDelete = [];
-    var affectedIds = [idTransaksi];
-
-    for (var i = 0; i < data.length; i++) {
-      var curId = data[i][0];
-      var sponsorId = data[i][10];
-      if (curId === idTransaksi || sponsorId === idTransaksi) {
-        rowsToDelete.push(i + 2);
-        if (curId !== idTransaksi) affectedIds.push(curId);
-      }
-    }
-
-    rowsToDelete.sort(function(a, b) { return b - a; });
-    for (var r = 0; r < rowsToDelete.length; r++) {
-      sheetPeserta.deleteRow(rowsToDelete[r]);
-    }
-
-    var busLastRow = sheetBus.getLastRow();
-    if (busLastRow > 1) {
-      var busRange = sheetBus.getRange(2, 1, busLastRow - 1, 6);
-      var busData = busRange.getValues();
-      var changed = false;
-
-      for (var b = 0; b < busData.length; b++) {
-        var seatedId = String(busData[b][4] || '').trim();
-        if (affectedIds.indexOf(seatedId) !== -1) {
-          busData[b][4] = '';
-          busData[b][5] = '';
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        busRange.setValues(busData);
-      }
-    }
-
-    SpreadsheetApp.flush();
-    return { success: true, message: 'Data peserta dan alokasi kursi berhasil dihapus.' };
-  } catch (err) {
-    return { success: false, message: 'Gagal menghapus data: ' + err.message };
-  }
-}
-
-function swapBusSeats(busIdA, seatNoA, busIdB, seatNoB) {
-  try {
-    var ss = getSpreadsheet_();
-    var sheetBus = ss.getSheetByName('Kursi_Bus');
-    var lastRow = sheetBus.getLastRow();
-    if (lastRow <= 1) return { success: false, message: 'Data kursi tidak tersedia.' };
-
-    var range = sheetBus.getRange(2, 1, lastRow - 1, 6);
-    var data = range.getValues();
-
-    var indexA = -1;
-    var indexB = -1;
-
-    for (var i = 0; i < data.length; i++) {
-      if (String(data[i][0]) === String(busIdA) && String(data[i][1]) === String(seatNoA)) indexA = i;
-      if (String(data[i][0]) === String(busIdB) && String(data[i][1]) === String(seatNoB)) indexB = i;
-    }
-
-    if (indexA === -1 || indexB === -1) {
-      return { success: false, message: 'Salah satu posisi kursi tidak ditemukan.' };
-    }
-
-    var tempId = data[indexA][4];
-    var tempName = data[indexA][5];
-
-    data[indexA][4] = data[indexB][4];
-    data[indexA][5] = data[indexB][5];
-
-    data[indexB][4] = tempId;
-    data[indexB][5] = tempName;
-
-    range.setValues(data);
-    SpreadsheetApp.flush();
-
-    return { 
-      success: true, 
-      message: 'Kursi (' + busIdA + ' - ' + seatNoA + ') dan (' + busIdB + ' - ' + seatNoB + ') berhasil ditukar!' 
-    };
-  } catch (err) {
-    return { success: false, message: 'Gagal menukar kursi: ' + err.message };
-  }
-}
-
 function getExportData() {
   try {
     var ss = getSpreadsheet_();
@@ -1036,7 +1363,7 @@ function getExportData() {
         if (pId && pId.trim() !== '') {
           seatMapping[pId] = {
             idBus: busValues[b][0],
-            noKursi: busValues[b][1]
+            noKursi: String(busValues[b][1]).trim().toUpperCase()
           };
         }
       }
@@ -1189,25 +1516,21 @@ function clearAllDatabase(adminRole) {
 
     var ss = getSpreadsheet_();
 
-    // 1. Kosongkan Data Peserta
     var sheetPeserta = ss.getSheetByName('Peserta');
     if (sheetPeserta && sheetPeserta.getLastRow() > 1) {
       sheetPeserta.deleteRows(2, sheetPeserta.getLastRow() - 1);
     }
 
-    // 2. Kosongkan Log Tabungan
     var sheetLog = ss.getSheetByName('Log_Tabungan');
     if (sheetLog && sheetLog.getLastRow() > 1) {
       sheetLog.deleteRows(2, sheetLog.getLastRow() - 1);
     }
 
-    // 3. Kosongkan Dana Sumbangan
     var sheetSumbangan = ss.getSheetByName('Dana_Sumbangan');
     if (sheetSumbangan && sheetSumbangan.getLastRow() > 1) {
       sheetSumbangan.deleteRows(2, sheetSumbangan.getLastRow() - 1);
     }
 
-    // 4. Reset Alokasi Kursi Bus
     var sheetBus = ss.getSheetByName('Kursi_Bus');
     if (sheetBus && sheetBus.getLastRow() > 1) {
       var numRows = sheetBus.getLastRow() - 1;
