@@ -12,7 +12,8 @@
     adminWaPhone: '6281234567890',
     currentInfoHari: 'Hari 1',
     rundownList: [],
-    kontakList: []
+    kontakList: [],
+    sumbanganList: []
   };
 
   var previewDummyRundown = [
@@ -30,6 +31,11 @@
     { id: 'KT-001', jabatan: 'Koordinator Bus 1', nama: 'Pak Agus', noWhatsapp: '081234567890' },
     { id: 'KT-002', jabatan: 'Koordinator Bus 2', nama: 'Tommy H', noWhatsapp: '081234567890' },
     { id: 'KT-003', jabatan: 'Ketua RT 03', nama: 'Pak Sugeng', noWhatsapp: '081398765432' }
+  ];
+
+  var previewDummySumbangan = [
+    { id: 'SMB-0001', tanggal: '15/09/2026 14:00:00', namaDonatur: 'H. Ahmad', nominal: 500000, keterangan: 'Sumbangan Doorprize Acara', adminPenyetor: 'Super Admin' },
+    { id: 'SMB-0002', tanggal: '15/09/2026 16:30:00', namaDonatur: 'Hamba Allah', nominal: 300000, keterangan: 'Konsumsi Tambahan Bus', adminPenyetor: 'Admin' }
   ];
 
   var previewDummySeats = [];
@@ -70,6 +76,7 @@
             appState.peserta = res.data.peserta || [];
             appState.seats = res.data.seats || [];
             appState.stats = res.data.stats || {};
+            appState.sumbanganList = res.data.sumbanganList || [];
             if (res.data.info) {
               appState.rundownList = res.data.info.rundown || [];
               appState.kontakList = res.data.info.kontak || [];
@@ -91,10 +98,13 @@
       appState.seats = previewDummySeats;
       appState.rundownList = previewDummyRundown;
       appState.kontakList = previewDummyKontak;
+      appState.sumbanganList = previewDummySumbangan;
       appState.stats = {
         totalWarga: 4,
         totalKepalaKeluarga: 2,
         totalTabungan: 700000,
+        totalSumbangan: 800000,
+        totalKasKeseluruhan: 1500000,
         kursiTerisiBus1: 4,
         kursiTerisiBus2: 0
       };
@@ -292,6 +302,75 @@
     }
   }
 
+  function openSumbanganModal(id) {
+    var item = null;
+    if (id) {
+      item = (appState.sumbanganList || []).find(function(s) { return s.id === id; });
+    }
+
+    document.getElementById('smb-input-id').value = item ? item.id : '';
+    document.getElementById('smb-input-nama').value = item ? item.namaDonatur : '';
+    document.getElementById('smb-input-nominal').value = item ? item.nominal : '';
+    document.getElementById('smb-input-keterangan').value = item ? item.keterangan : '';
+
+    document.getElementById('modal-sumbangan-title').textContent = item ? 'Edit Data Sumbangan' : 'Catat Dana Sumbangan Baru';
+    openModal('modal-sumbangan-crud');
+  }
+
+  function saveSumbanganProcess() {
+    var payload = {
+      id: document.getElementById('smb-input-id').value,
+      namaDonatur: document.getElementById('smb-input-nama').value,
+      nominal: document.getElementById('smb-input-nominal').value,
+      keterangan: document.getElementById('smb-input-keterangan').value
+    };
+
+    var btn = document.getElementById('btn-save-smb');
+    if (btn) btn.disabled = true;
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (btn) btn.disabled = false;
+          if (res && res.success) {
+            closeModal('modal-sumbangan-crud');
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menyimpan sumbangan', 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (btn) btn.disabled = false;
+          showToast('Error: ' + err.message, 'error');
+        })
+        .saveSumbangan(payload, appState.adminRole);
+    } else {
+      if (btn) btn.disabled = false;
+      closeModal('modal-sumbangan-crud');
+      showToast('Preview: Sumbangan berhasil dicatat', 'success');
+      loadDataFromBackend();
+    }
+  }
+
+  function deleteSumbanganProcess(id) {
+    if (!confirm('Hapus pencatatan sumbangan ini?')) return;
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.success) {
+            showToast(res.message, 'success');
+            loadDataFromBackend();
+          } else {
+            showToast(res ? res.message : 'Gagal menghapus sumbangan', 'error');
+          }
+        })
+        .deleteSumbangan(id, appState.adminRole);
+    } else {
+      showToast('Preview: Sumbangan dihapus', 'success');
+    }
+  }
+
   function submitAdminLogin() {
     var pin = document.getElementById('admin-pin-input').value;
     var btn = document.getElementById('btn-submit-login');
@@ -335,7 +414,7 @@
     document.getElementById('admin-swap-indicator').classList.remove('hidden');
     document.getElementById('btn-admin-print-bus').classList.remove('hidden');
 
-    // Tampilkan field input nominal tabungan khusus mode Admin / Super Admin
+    // Tampilkan field input nominal tabungan & sumbangan khusus mode Admin
     var regSetor = document.getElementById('container-reg-setoran-awal');
     var regNotice = document.getElementById('notice-reg-setoran-public');
     if (regSetor) regSetor.classList.remove('hidden');
@@ -348,13 +427,13 @@
 
     var btnAddRD = document.getElementById('btn-admin-add-rundown');
     var btnAddKT = document.getElementById('btn-admin-add-kontak');
+    var btnAddSMB = document.getElementById('btn-admin-add-sumbangan');
     if (btnAddRD) btnAddRD.classList.remove('hidden');
     if (btnAddKT) btnAddKT.classList.remove('hidden');
+    if (btnAddSMB) btnAddSMB.classList.remove('hidden');
 
-    if (appState.adminRole === 'Super Admin') {
-      var superPanel = document.getElementById('super-admin-panel');
-      if (superPanel) superPanel.classList.remove('hidden');
-    }
+    var superPanel = document.getElementById('super-admin-panel');
+    if (superPanel) superPanel.classList.remove('hidden');
 
     renderAll();
   }
@@ -367,7 +446,7 @@
     document.getElementById('admin-swap-indicator').classList.add('hidden');
     document.getElementById('btn-admin-print-bus').classList.add('hidden');
 
-    // Sembunyikan field input nominal tabungan untuk warga publik
+    // Sembunyikan field input nominal tabungan & sumbangan untuk warga publik
     var regSetor = document.getElementById('container-reg-setoran-awal');
     var regNotice = document.getElementById('notice-reg-setoran-public');
     if (regSetor) regSetor.classList.add('hidden');
@@ -380,8 +459,10 @@
 
     var btnAddRD = document.getElementById('btn-admin-add-rundown');
     var btnAddKT = document.getElementById('btn-admin-add-kontak');
+    var btnAddSMB = document.getElementById('btn-admin-add-sumbangan');
     if (btnAddRD) btnAddRD.classList.add('hidden');
     if (btnAddKT) btnAddKT.classList.add('hidden');
+    if (btnAddSMB) btnAddSMB.classList.add('hidden');
 
     var superPanel = document.getElementById('super-admin-panel');
     if (superPanel) superPanel.classList.add('hidden');
